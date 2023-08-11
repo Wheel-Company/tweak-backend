@@ -1,20 +1,19 @@
-from django.urls import include, path
-from rest_framework.routers import DefaultRouter
-from .views import ProfileViewSet, ConnectedAccountViewSet, CategoryViewSet, DifficultyViewSet,QuestionViewSet, AnswerViewSet, SubscriptionViewSet, CouponViewSet, NoteViewSet
+from rest_framework import routers
+from django.conf import settings
+from django.urls import path
+from api import views
+import importlib
+import re
 
-router = DefaultRouter()
-router.register(r'profiles', ProfileViewSet)
-router.register(r'connected_accounts', ConnectedAccountViewSet)
-router.register(r'categories', CategoryViewSet, basename='category')
-router.register(r'difficulty', DifficultyViewSet)
-router.register(r'questions', QuestionViewSet, basename='question')
-router.register(r'answers', AnswerViewSet)
-router.register(r'subscriptions', SubscriptionViewSet)
-router.register(r'coupons', CouponViewSet)
-router.register(r'notes', NoteViewSet)
+router = routers.DefaultRouter()
+mod = importlib.import_module("api.models")
 
-
-urlpatterns = [
-    path('', include(router.urls)),
-    path('api/', include(router.urls)),
-]
+for klassName in dir(mod):
+    if "__" in klassName:
+        continue
+    if klassName == "models":
+        continue
+    klass = getattr(mod, klassName)
+    parts = re.findall("[A-Z][^A-Z]*", klassName)
+    router.register(r"%s" % "/".join(parts).lower(), views.getViewSet(klass))
+urlpatterns = router.urls
