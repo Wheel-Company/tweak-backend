@@ -201,8 +201,8 @@ def send_reset_mail(request):
                     },
                 )
                 subject, from_email, to = (
-                    "[Ai-Bgm] 비밀번호 변경",
-                    "customer.service@juice.co.kr",
+                    "[tweak] 비밀번호 변경",
+                    "tweaker.202306@gmail.com",
                     email,
                 )
                 text_content = strip_tags(message)

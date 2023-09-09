@@ -1,0 +1,12 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    <div class="grp-float-left grp-changelist-actions">
+        <form action="{{action}}" method="POST" enctype="multipart/form-data">
+            {{ form.as_p }}
+            {% csrf_token %}
+            <button type="submit" class="grp-button" style="width:100px">Upload Excel</button>
+        </form>
+    </div>
+    <br />
+{% endblock %}
