@@ -13,7 +13,9 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
+# from django.contrib import admin
+from baton.autodiscover import admin
+from baton.autodiscover import admin
 from django.urls import path, include
 from rest_framework import urls, routers
 from api.models import *
@@ -77,8 +79,6 @@ urlpatterns = [
     path("reset/<str:uid64>/<str:token>/", reset),  # reset password
     path("active/<int:pk>/", is_active),  # check active user
     path("edit", edit),
-    path("api/bgm/popular", views.getBgmOrderByPopularity),
-    path("api/curation/popular", views.getcurationOrderByPopularity),
 ]
 
 urlpatterns += router.urls
