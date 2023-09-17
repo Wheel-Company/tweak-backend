@@ -1,19 +1,9 @@
 from rest_framework import serializers
-from .models import User, Profile, ConnectedAccount, Category, Difficulty,Question, Answer, Subscription, Coupon, Note
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'id']  # or whatever fields you want
+from .models import Profile, Category, Difficulty, GrammarContent, Answer, Subscription, Coupon, Note, Banner
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = '__all__'
-
-class ConnectedAccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConnectedAccount
         fields = '__all__'
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -25,14 +15,11 @@ class DifficultySerializer(serializers.ModelSerializer):
     class Meta:
         model = Difficulty
         fields = '__all__'
-        
-class QuestionSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
-    difficulty = DifficultySerializer(read_only=True)
 
+class GrammarContentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Question
-        fields = ['id', 'category', 'difficulty', 'day', 'question_text_en', 'question_text_ko']
+        model = GrammarContent
+        fields = '__all__'
 
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -52,4 +39,9 @@ class CouponSerializer(serializers.ModelSerializer):
 class NoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
+        fields = '__all__'
+
+class BannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Banner
         fields = '__all__'

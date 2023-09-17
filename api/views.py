@@ -72,31 +72,6 @@ def getcurationOrderByPopularity(self):
         return Response(res, status=status.HTTP_200_OK)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-@csrf_exempt
-@api_view(("GET",))
-@permission_classes((IsAuthenticatedOrReadOnly,))
-@authentication_classes((JSONWebTokenAuthentication, SessionAuthentication))
-def getBgmOrderByPopularity(self):
-    serializers = getSerializer(BgmItem)
-    content = self.GET.get("content_type")
-    if content is None:
-        content = 2
-    bgms = BgmItem.objects.all()
-    bgms = applyOption(self, bgms)
-    items = bgms.annotate(
-        count=Count("bgm_user_content", filter=Q(bgm_user_content__content=content))
-    ).order_by("-count", "id")
-    serializer = serializers(items, many=True)
-    page = self.GET.get("page")
-    count = self.GET.get("count_per_page")
-    ignore = self.GET.get("ignore")
-    if page:
-        res = applyPagination(items, serializers, page, count, None, ignore)
-        return Response(res, status=status.HTTP_200_OK)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 def getSerializer(modelClass):
     class ApiSerializer(serializers.ModelSerializer):
         class Meta:
