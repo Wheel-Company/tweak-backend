@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'baton.autodiscover',
-    'django_celery_beat',
 ]
 
 MIDDLEWARE = [

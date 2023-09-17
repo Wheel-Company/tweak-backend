@@ -5,15 +5,14 @@ DEBUG = True
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "tweak",
-        "USER": "root",
-        "PASSWORD": "tweak500!",
-        "HOST": "127.0.0.1",  # Or an IP Address that your DB is hosted on
-        # "HOST": "easyear01-test.c9yoxqhzjvtb.ap-northeast-2.rds.amazonaws.com",
-        "PORT": "3306",
-        "OPTIONS": {
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+       "NAME": "tweak",
+       "USER": "wheelcompany",
+       "PASSWORD": "Wheel202307!",
+       "HOST": "tweak.cawqlcmytbf3.ap-northeast-2.rds.amazonaws.com",  # Or an IP Address that your DB is hosted on
+       # "HOST": "easyear01-test.c9yoxqhzjvtb.ap-northeast-2.rds.amazonaws.com",
+       "PORT": "3306",
+       "OPTIONS": {
+       "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
 }
