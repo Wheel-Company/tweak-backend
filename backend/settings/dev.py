@@ -3,7 +3,7 @@ from backend.settings.base import *
 DEBUG = True
 # CORS 관련
 
-ALLOWED_HOSTS =["13.125.139.26:8000"]
+ALLOWED_HOSTS =["13.125.139.26"]
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
