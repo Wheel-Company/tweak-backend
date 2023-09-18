@@ -3,6 +3,7 @@ from rest_framework.schemas import AutoSchema
 from django.conf import settings
 import requests
 import json
+import openai
 
 
 class CustomSchema(AutoSchema):
@@ -63,38 +64,6 @@ class CustomSchema(AutoSchema):
             return self.schema_delete
 
 
-# def send_fcm(device, notification=None, data=None):
-#     url = 'https://fcm.googleapis.com/fcm/send'
-#     headers = {
-#         'Authorization': 'key=%s'%settings.FCM_SERVER_KEY,
-#         'Content-Type': 'application/json; UTF-8',
-#     }
-#     content = {
-#         'to':device.fcm_token
-#     }
-#     if notification:
-#         content['notification'] = notification
-#     if data:
-#         content['data'] = data
-#     if 'android' in data:
-#         content['notification']['android_channel_id'] = data['android']['channelId']
-#     if 'ios' in data:
-#         content['content_available'] = True
-#     r = requests.post(url, data=json.dumps(content), headers=headers)
-#     result = json.loads(r.text)
-#     FcmHistory(
-#         body=json.dumps({
-#             'device':device.id,
-#             'data':data,
-#             'result':result
-#         })
-#     ).save()
-#     if result['success'] == 0:
-#         device.valid = False
-#         device.save()
-#     #     device.delete()
-
-
 def decode_base64(data, altchars=b"+/"):
     """Decode base64, padding being optional.
 
@@ -107,3 +76,17 @@ def decode_base64(data, altchars=b"+/"):
     if missing_padding:
         data += "=" * (4 - missing_padding)
     return base64.b64decode(data, altchars)
+
+
+
+
+# OpenAI API 키 설정
+openai.api_key = "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"
+
+def grammar_correction(text):
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=f"Please correct the following text: '{text}'\n\nCorrected text:",
+        max_tokens=50  # 적절한 길이로 조절
+    )
+    return response.choices[0].text.strip()

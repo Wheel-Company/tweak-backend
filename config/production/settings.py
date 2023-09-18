@@ -1,9 +1,12 @@
-from backend.settings.base import *
+import os
+from config.settings import *
+
+SETTING_MODE = 'production'
 
 DEBUG = True
 # CORS 관련
 
-ALLOWED_HOSTS =["13.125.139.26"]
+ALLOWED_HOSTS =["13.125.139.26","tweak-english.com"]
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
@@ -18,9 +21,6 @@ DATABASES = {
         },
     }
 }
-
-
-# WSGI_APPLICATION = "backend.development.wsgi.application"
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = [

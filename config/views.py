@@ -36,10 +36,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.html import strip_tags
 from django.http import HttpResponse, JsonResponse
 from api.models import *
-from backend.utils import CustomSchema
+from config.utils import CustomSchema
 import coreapi
 from django.contrib.auth.hashers import check_password
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .utils import grammar_correction
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import GrammarCorrectionSerializer
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -373,89 +378,21 @@ class UserViewSet(viewsets.ModelViewSet):
             instance._prefetched_objects_cache = {}
         return Response(serializer.data)
 
+@permission_classes((AllowAny,))
+@authentication_classes((JSONWebTokenAuthentication,))
+class GrammarCorrectionView(APIView):
+    serializer_class = GrammarCorrectionSerializer  # 시리얼라이저 지정
 
-# @permission_classes((AllowAny,))
-# @authentication_classes((JSONWebTokenAuthentication,))
-# class UserViewSet(viewsets.ModelViewSet):
-#     queryset = User.objects.all().order_by('-date_joined')
-#     serializer_class = UserSerializer
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
 
-#     # schema = CustomSchema({
-#     #     'list': [
-#     #         coreapi.Field('self', required=False, location='query', type='string', description='get auth user data')
-#     #     ]
-#     # })
+        if serializer.is_valid():
+            text_to_correct = serializer.validated_data.get('text', '')
 
-#     #mapping -> auth.User 로 검색해서 foreign key 로 account 정보 주기
-#     def retrieve(self, request, pk=None):
-#         email = request.GET.get('email')
-#         try :
-#             if email :
-#                 user = User.objects.get(email=email)
-#                 print('user : ', user, user.pk)
-#                 account = AccountItems.objects.get(pk=user.pk)
-#                 return Response({
-#                     'user': account.user.id,
-#                     'email': account.user.email,
-#                     'phone': account.phone
-#                 })
-#             else :
-#                 account = AccountItems.objects.get(pk=pk)
-#                 return Response({
-#                     'user': account.user.id,
-#                     'email': account.user.email,
-#                     'phone': account.phone
-#                 })
-#         except User.DoesNotExist :
-#             return Response({'result ' : 'User does not exists'})
-#         except AccountItems.DoesNotExist:
-#             return Response({'result ' : "Account does not exists",})
+            if not text_to_correct:
+                return Response({'error': 'Text to correct is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-#     def list(self, request):
-#         username = request.GET.get('username')
-#         email = request.GET.get('email')
-#         if request.GET.get('self') == 'true':
-#             if request.user.is_authenticated:
-#                 serializer = self.serializer_class(request.user)
-#                 return Response(serializer.data, status=status.HTTP_200_OK)
-#             else:
-#                 return Response(status=status.HTTP_401_UNAUTHORIZED)
-#         elif username:
-#             out = {'username':False, 'email':False}
-#             if User.objects.filter(username=username).count() > 0:
-#                 out['username'] = True
-#             if email and User.objects.filter(email=email).count() > 0:
-#                 out['email'] = True
-#             return Response(out, status=status.HTTP_200_OK)
-#         serializers = self.serializer_class(self.queryset, many=True)
-#         return Response(serializers.data, status=status.HTTP_200_OK)
+            corrected_text = grammar_correction(text_to_correct)
+            return Response({'corrected_text': corrected_text}, status=status.HTTP_200_OK)
 
-#     def create(self, request):
-#         response = super().create(request)
-#         current_site = get_current_site(request)
-#         message = render_to_string('account/user_activate_email.html', {
-#             'user':response.data,
-#             'domain': current_site.domain,
-#             'uid': urlsafe_base64_encode(force_bytes(response.data['id'])).encode().decode(),
-#             'token': account_activation_token.make_token(response.data)
-#         })
-#         email = EmailMessage('Activation Mail', message, to=[response.data['email']])
-#         email.send()
-#         return response
-
-#     def update(self, request, pk=None, *args, **kwargs):
-#         body = json.loads(request.body)
-#         partial = True
-#         instance = self.get_object()
-#         serializer = self.get_serializer(instance, data=request.data, partial=partial)
-#         serializer.is_valid(raise_exception=True)
-#         self.perform_update(serializer)
-#         if(body.get('password')) :
-#             user = User.objects.get(pk=pk)
-#             user.set_password(body.get('password'))
-#             user.save()
-#         if getattr(instance, '_prefetched_objects_cache', None):
-#         # If 'prefetch_related' has been applied to a queryset, we need to
-#         # forcibly invalidate the prefetch cache on the instance.
-#           instance._prefetched_objects_cache = {}
-#         return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

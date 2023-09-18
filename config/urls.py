@@ -31,6 +31,7 @@ import logging
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
+from .views import GrammarCorrectionView
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -76,22 +77,16 @@ urlpatterns = [
     path("api-auth/", include(urls)),
     path("api-", include("api.urls")),
     path("", include(router.urls)),
-    path("send_validation_mail/", send_validation_mail),
-    path("send_change_mail/", send_change_mail),
     path("user-verify/", verify),
     path(r"api/token/", ObtainAuthTokenWithLogin.as_view()),
     path(r"api/token/verify/", verify_jwt_token),
     path(r"api/token/refresh/", refresh_jwt_token),
-    path(
-        "activate/<str:uid64>/<str:token>/", activate
-    ),  # active user -> create 시에 발송된 email
-    path("send_reset_mail", send_reset_mail),  # send reset email
-    path("reset/<str:uid64>/<str:token>/", reset),  # reset password
     path("active/<int:pk>/", is_active),  # check active user
     path("edit", edit),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('grammar-correction/', GrammarCorrectionView.as_view(), name='grammar-correction'),
     # path('api/', include('api.urls')),  # Replace with your app's URL patterns
 ]
 

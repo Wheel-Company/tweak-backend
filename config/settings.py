@@ -19,6 +19,10 @@ SECRET_KEY = 'django-insecure-=e!g&p-3@smi7j^=@hx06v)=m^w$5q6@+1nbl@@n%fg$53wf#e
 DEBUG = True
 ALLOWED_HOSTS = []
 
+SWAGGER_SETTINGS = {
+    'DEFAULT_AUTO_SCHEMA_CLASS': 'drf_yasg.inspectors.SwaggerAutoSchema',
+}
+
 # 설치된 앱 목록
 INSTALLED_APPS = [
     # Django 기본 앱
@@ -108,7 +112,7 @@ MIDDLEWARE = [
 ]
 
 # URL 설정
-ROOT_URLCONF = 'backend.urls'
+ROOT_URLCONF = 'config.urls'
 
 # 템플릿 설정
 TEMPLATES = [
@@ -128,7 +132,7 @@ TEMPLATES = [
 ]
 
 # WSGI 앱 설정
-WSGI_APPLICATION = 'backend.wsgi.application'
+WSGI_APPLICATION = 'config.dev.wsgi.application'
 
 # 데이터베이스 설정
 DATABASES = {
