@@ -16,7 +16,7 @@ Including another URLconf
 # from django.contrib import admin
 from baton.autodiscover import admin
 from baton.autodiscover import admin
-from django.urls import path, include
+from django.urls import path, re_path, include
 from rest_framework import urls, routers
 from api.models import *
 from api import views
@@ -28,6 +28,23 @@ from rest_framework_jwt.views import (
 )
 from .views import *
 import logging
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Tweak API",
+        default_version='v1',
+        description="API description",
+        terms_of_service="https://www.tweak-english.com/terms/",
+        contact=openapi.Contact(email="contact@tweak-english.com"),
+        license=openapi.License(name="tweak-english License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
+
 
 logger = logging.getLogger("django")
 
@@ -62,13 +79,6 @@ urlpatterns = [
     path("send_validation_mail/", send_validation_mail),
     path("send_change_mail/", send_change_mail),
     path("user-verify/", verify),
-    # path('accountItem',views.getViewSet(models.AccountItems).as_view({'get': 'list'})),
-    # path('accountItem/<int:pk>', views.getViewSet(models.AccountItems).as_view({'get':'retrieve', 'put':'update', 'delete':'destroy'})),
-    # path(r'api-user/<int:pk>/', UserViewSet.as_view({'get': 'retrieve', 'patch':'update' , 'delete' : 'destroy' })),
-    # path(r'api-user', UserViewSet.as_view({'get': 'list' , 'post': 'create'})),
-    # path(r'api-users/', UserViewSet.as_view({'get': 'list'})),
-    # path(r'api-auth-user/<int:pk>/', UserViewSet.as_view({'get': 'retrieve'})),
-    # path(r'api-auth-user/<str:username>/', UserViewSet.as_view({'get': 'retrieve'})),
     path(r"api/token/", ObtainAuthTokenWithLogin.as_view()),
     path(r"api/token/verify/", verify_jwt_token),
     path(r"api/token/refresh/", refresh_jwt_token),
@@ -79,6 +89,10 @@ urlpatterns = [
     path("reset/<str:uid64>/<str:token>/", reset),  # reset password
     path("active/<int:pk>/", is_active),  # check active user
     path("edit", edit),
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    # path('api/', include('api.urls')),  # Replace with your app's URL patterns
 ]
 
 urlpatterns += router.urls

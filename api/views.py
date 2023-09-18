@@ -51,34 +51,16 @@ CHAIN_FILTER = [
     "iexact",
 ]
 
-
-@csrf_exempt
-@api_view(("GET",))
-@permission_classes((IsAuthenticatedOrReadOnly,))
-@authentication_classes((JSONWebTokenAuthentication, SessionAuthentication))
-def getcurationOrderByPopularity(self):
-    serializers = getSerializer(CurationItem)
-    curations = curationItem.objects.all()
-    curations = applyOption(self, curations)
-    items = curations.annotate(count=Count("curation_user_content")).order_by(
-        "-count", "id"
-    )
-    serializer = serializers(items, many=True)
-    page = self.GET.get("page")
-    count = self.GET.get("count_per_page")
-    ignore = self.GET.get("ignore")
-    if page:
-        res = applyPagination(items, serializers, page, count, None, ignore)
-        return Response(res, status=status.HTTP_200_OK)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
 def getSerializer(modelClass):
+    class_name = modelClass.__name__
     class ApiSerializer(serializers.ModelSerializer):
         class Meta:
             model = modelClass
             fields = "__all__"
+            ref_name = f"{class_name}API"  # 고유한 ref_name 설정
 
     return ApiSerializer
+
 
 
 def readQuery(request, key):

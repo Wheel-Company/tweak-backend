@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'drf_yasg', #drf_yasg
     # admin 테마
     'baton',
     'baton.autodiscover',
