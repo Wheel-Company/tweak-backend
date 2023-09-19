@@ -1,5 +1,6 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
+from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
@@ -116,7 +117,9 @@ def applyOption(request, queryset):
 
     return queryset
 
-
+def my_note(request):
+            return render(request, 'my_note.html')
+        
 def getViewSet(modelClass):
     # @permission_classes((IsAuthenticatedOrReadOnly,))
     # @authentication_classes((JSONWebTokenAuthentication, SessionAuthentication))
@@ -125,7 +128,6 @@ def getViewSet(modelClass):
     class ApiViewSet(viewsets.ModelViewSet):
         queryset = modelClass.objects.all().order_by("-id")
         serializer_class = getSerializer(modelClass)
-
         def list(self, request):
             page = request.GET.get("page")
             depth = request.GET.get("depth")

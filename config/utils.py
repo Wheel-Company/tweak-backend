@@ -82,11 +82,13 @@ def decode_base64(data, altchars=b"+/"):
 
 # OpenAI API 키 설정
 openai.api_key = "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"
+openai.organization = "org-o6PzPP4eWUzHKG2oxcx3OfCX"
 
 def grammar_correction(text):
     response = openai.Completion.create(
-        engine="text-davinci-002",
+        model="gpt-3.5-turbo-instruct",
         prompt=f"Please correct the following text: '{text}'\n\nCorrected text:",
         max_tokens=50  # 적절한 길이로 조절
     )
+    
     return response.choices[0].text.strip()
