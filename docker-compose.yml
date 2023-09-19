@@ -20,7 +20,5 @@ services:
         apt install -y libsox-fmt-mp3
         python3 -m pip install -U -r requirements.txt
         python3 manage.py collectstatic --no-input
-        python3 manage.py uwsgi
-        service supervisor start
-        service nginx start
+        python3 manage.py runserver
         tail -f /dev/null"

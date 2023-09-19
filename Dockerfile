@@ -1,11 +1,13 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update
-RUN apt-get install -y nginx uwsgi python3 python3-pip wget locales redis supervisor
+RUN apt-get install -y nginx uwsgi python3.11 python3-pip wget locales redis supervisor
 RUN apt-get install -y uwsgi-plugin-python3
 RUN apt-get install -y libffi-dev 
 RUN apt-get install -y libmysqlclient-dev
+RUN apt-get install -y libssl-dev
+RUN apt-get install -y python3.11-dev
 
 RUN sed -i -e 's/# ko_KR.UTF-8 UTF-8/ko_KR.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen
