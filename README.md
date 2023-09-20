@@ -3,7 +3,6 @@
 tweak-backend
 ├─ .DS_Store
 ├─ .gitignore
-├─ Dockerfile
 ├─ README.md
 ├─ api
 │  ├─ __init__.py
@@ -49,18 +48,12 @@ tweak-backend
 │  │  └─ wsgi.py
 │  ├─ middleware.py
 │  ├─ production
-│  │  ├─ asgi.py
-│  │  ├─ nginx.conf
-│  │  ├─ settings.py
-│  │  ├─ supervisor.conf
-│  │  ├─ uwsgi.ini
-│  │  └─ wsgi.py
+│  │  └─ settings.py
 │  ├─ serializers.py
 │  ├─ settings.py
 │  ├─ urls.py
 │  ├─ utils.py
 │  └─ views.py
-├─ docker-compose.yml
 ├─ log
 ├─ manage.py
 ├─ requirements.txt

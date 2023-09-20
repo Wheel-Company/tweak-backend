@@ -4,7 +4,7 @@ from config.settings import *
 
 DEBUG = True
 # CORS 관련
-
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 ALLOWED_HOSTS =['*']
 DATABASES = {
     "default": {

@@ -1,9 +1,17 @@
 from django.http import JsonResponse
-from rest_framework.status import is_success, is_client_error
+from rest_framework import status
 
 class CustomResponseMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
+
+        # rest_framework.status의 상태 코드 상수를 활용
+        self.status_messages = {
+            status.HTTP_200_OK: "OK",
+            status.HTTP_201_CREATED: "Created",
+            status.HTTP_400_BAD_REQUEST: "Bad Request",
+            status.HTTP_500_INTERNAL_SERVER_ERROR: "Internal Server Error",
+        }
 
     def __call__(self, request):
         # Swagger와 관련된 URL은 예외 처리
@@ -14,22 +22,13 @@ class CustomResponseMiddleware:
         if request.path.startswith('/api'):
             response = self.get_response(request)
 
-        if hasattr(response, 'data'):
-            if is_success(response.status_code):
+            if hasattr(response, 'data'):
+                response_message = self.status_messages.get(response.status_code, "Unknown Status")
                 data = {
                     "responseCode": response.status_code,
-                    "responseMsg": "Success",
+                    "responseMsg": response_message,
                     "result": response.data
                 }
-            elif is_client_error(response.status_code):
-                data = {
-                    "responseCode": response.status_code,
-                    "responseMsg": "Fail",
-                    "result": response.data
-                }
-            else:
-                return response
+                return JsonResponse(data)
 
-            return JsonResponse(data)
-        
-        return response
+        return self.get_response(request)
