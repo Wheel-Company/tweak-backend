@@ -1,26 +1,10 @@
 version: "3"
 
 services:
-  backend:
+  local:
     build:
       context: .
       dockerfile: ./Dockerfile
-    volumes:
-      - ./:/app
-      - ./backend/settings/nginx.conf:/etc/nginx/sites-enabled/nginx.conf
-      - ./backend/settings/uwsgi.ini:/etc/uwsgi/apps-enabled/uwsgi.ini
-      - ./backend/settings/supervisor.conf:/etc/supervisor/conf.d/supervisor.conf
-      - ./log:/var/log/nginx
-      - ./log:/var/log/uwsgi/app
     ports:
-      - "8000:8000"
+      - "8000:80"
     restart: "always"
-    command: >
-      sh -c "
-        apt install -y libsox-fmt-mp3
-        python3 -m pip install -U -r requirements.txt
-        python3 manage.py collectstatic --no-input
-        python3 manage.py uwsgi
-        service supervisor start
-        service nginx start
-        tail -f /dev/null"

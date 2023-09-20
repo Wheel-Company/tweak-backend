@@ -5,8 +5,10 @@ SETTING_MODE = 'production'
 
 DEBUG = True
 # CORS 관련
+ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS =["13.125.139.26","tweak-english.com","localhost","127.0.0.1"]
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
-ALLOWED_HOSTS =["13.125.139.26","tweak-english.com"]
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",

@@ -1,4 +1,4 @@
-import logging
+# import logging
 from pickle import TRUE
 from config.settings import *
 
@@ -52,47 +52,47 @@ CSRF_TRUSTED_ORIGINS = (
 )
 
 LOG_LEVEL = 'INFO'
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'default': {
-            'format': u'[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s'
-        },
-    },
-    'handlers': {
-        'file_handler': {
-            'level': LOG_LEVEL,
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'my-logging.log'),
-            'maxBytes': 1024 * 1024 * 10,
-            'backupCount': 10,
-            'formatter': 'default',
-        },
-        'stream_handler': {
-            'level': LOG_LEVEL,
-            'class': 'logging.StreamHandler',
-            'formatter': 'default',
-        },
-        'mail_admins' : {
-            'level': 'WARNING',
-            'class': 'logging.StreamHandler',
-            'formatter': 'default',
-        },
-    },
-    'loggers': {
-        'stream_logger': {
-            'handlers': ['file_handler'],
-            'level': LOG_LEVEL,
-            'propagate': False
-        },
-        'file_logger': {
-            'handlers': ['stream_handler']
-        },
-        'celery_heartbeat': {
-            'handlers': ['stream_handler'],#['mail_admins'],
-            'level': LOG_LEVEL,
-            'propagate': False,
-        },
-    }
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'default': {
+#             'format': u'[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s'
+#         },
+#     },
+#     'handlers': {
+#         'file_handler': {
+#             'level': LOG_LEVEL,
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'filename': os.path.join(BASE_DIR, 'my-logging.log'),
+#             'maxBytes': 1024 * 1024 * 10,
+#             'backupCount': 10,
+#             'formatter': 'default',
+#         },
+#         'stream_handler': {
+#             'level': LOG_LEVEL,
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'default',
+#         },
+#         'mail_admins' : {
+#             'level': 'WARNING',
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'default',
+#         },
+#     },
+#     'loggers': {
+#         'stream_logger': {
+#             'handlers': ['file_handler'],
+#             'level': LOG_LEVEL,
+#             'propagate': False
+#         },
+#         'file_logger': {
+#             'handlers': ['stream_handler']
+#         },
+#         'celery_heartbeat': {
+#             'handlers': ['stream_handler'],#['mail_admins'],
+#             'level': LOG_LEVEL,
+#             'propagate': False,
+#         },
+#     }
+# }
