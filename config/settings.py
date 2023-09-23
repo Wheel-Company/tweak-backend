@@ -23,26 +23,6 @@ SWAGGER_SETTINGS = {
     'DEFAULT_AUTO_SCHEMA_CLASS': 'drf_yasg.inspectors.SwaggerAutoSchema',
 }
 
-# 설치된 앱 목록
-INSTALLED_APPS = [
-    # Django 기본 앱
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    # 커스텀 앱
-    'api',
-    # 서드파티 앱
-    'rest_framework',
-    'rest_framework.authtoken',
-    'corsheaders',
-    'drf_yasg', #drf_yasg
-    # admin 테마
-    'baton',
-    'baton.autodiscover',
-]
 BATON = {
     "SITE_HEADER": "TWEAK BACK OFFICE",
     "SITE_TITLE": "TWEAK BACK OFFICE",
@@ -65,8 +45,8 @@ BATON = {
     'LOGIN_SPLASH': '/static/core/img/login-splash.png',
     'FORCE_THEME': None,
     'SEARCH_FIELD': {
-        'label': 'Search contents...',
-        'url': '/search/',
+        'label': 'Label shown as placeholder',
+        'url': '/api/',
     },
     'MENU': (
         { 'type': 'title', 'label': 'main', 'apps': ('auth', ) },
@@ -99,6 +79,27 @@ BATON = {
     #     'VIEW_ID': '12345678',
     # }
 }
+
+# 설치된 앱 목록
+INSTALLED_APPS = [
+    # admin 테마
+    'baton',
+    # Django 기본 앱
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # 커스텀 앱
+    'api',
+    # 서드파티 앱
+    'rest_framework',
+    'rest_framework.authtoken',
+    'corsheaders',
+    'drf_yasg', #drf_yasg
+    'baton.autodiscover',
+]
 
 # 미들웨어 설정
 MIDDLEWARE = [
@@ -173,8 +174,8 @@ TIME_ZONE = 'Asia/Seoul'
 # REST 프레임워크 설정
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.authentication.BasicAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
+        # "rest_framework.authentication.BasicAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
         "rest_framework.permissions.IsAuthenticated",
         "rest_framework.permissions.AllowAny",
     ),

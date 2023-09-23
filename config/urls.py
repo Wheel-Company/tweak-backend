@@ -15,9 +15,8 @@ Including another URLconf
 """
 # from django.contrib import admin
 from baton.autodiscover import admin
-from baton.autodiscover import admin
 from django.urls import path, re_path, include
-from rest_framework import urls, routers
+from rest_framework import urls, routers, permissions
 from api.models import *
 from api import views
 from rest_framework_jwt.views import (
@@ -30,7 +29,6 @@ from .views import *
 # import logging
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from rest_framework import permissions
 from .views import GrammarCorrectionView
 
 schema_view = get_schema_view(
@@ -75,14 +73,13 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("baton/", include("baton.urls")),
     path("api-auth/", include(urls)),
+    path("api/", include("api.urls")),
     path("api-", include("api.urls")),
     path("", include(router.urls)),
     path("user-verify/", verify),
     path(r"api/token/", ObtainAuthTokenWithLogin.as_view()),
     path(r"api/token/verify/", verify_jwt_token),
     path(r"api/token/refresh/", refresh_jwt_token),
-    path("active/<int:pk>/", is_active),  # check active user
-    path("edit", edit),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
