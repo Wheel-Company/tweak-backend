@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7fcd3eb3-895c-45d3-8f07-43cbe591601c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/django-test.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/django-test.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
