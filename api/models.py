@@ -6,6 +6,7 @@ class Profile(models.Model):
     phone_number = models.CharField(max_length=20, blank=True)
     nickname = models.CharField(max_length=100, blank=True)
     is_email_registered = models.BooleanField(default=False)
+    last_login_at = models.DateTimeField(null=True, blank=True)  # 마지막 로그인 시간
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -20,8 +21,8 @@ class GrammarContent(models.Model):
     difficulty = models.ForeignKey(Difficulty, on_delete=models.CASCADE, null=True)
     day = models.IntegerField(default=1)
     sequence = models.IntegerField(default=1)  # 문제 순서
-    question_text_en = models.TextField(blank=True)
-    question_text = models.JSONField(null=True)
+    content_text_en = models.TextField(blank=True)
+    content_text = models.JSONField(null=True)
 
     class Meta:
         db_table = 'api_grammar_content'
@@ -33,11 +34,6 @@ class Answer(models.Model):
     is_correct = models.BooleanField(default=False)
     answered_at = models.DateTimeField(auto_now_add=True)
 
-class Subscription(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    start_date = models.DateField()
-    end_date = models.DateField()
-    subscription_type = models.CharField(max_length=100, blank=True)  # 구독 종류
 
 class Coupon(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -56,3 +52,28 @@ class Banner(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     sequence = models.PositiveIntegerField()
+
+class UserActivityLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    activity_type = models.CharField(max_length=100)  # 예: '문제 풀이', '로그인', '신고'
+    activity_detail = models.TextField(null=True, blank=True)  # 활동의 세부 정보
+    activity_date = models.DateTimeField(auto_now_add=True)
+
+class Report(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content_id = models.ForeignKey(GrammarContent, on_delete=models.CASCADE)
+    reason = models.TextField()  # 신고 이유
+    language = models.CharField(max_length=10)  # 언어 설정
+    reported_at = models.DateTimeField(auto_now_add=True)  # 신고 시간
+
+class SavedQuestion(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content_text = models.ForeignKey(GrammarContent, on_delete=models.CASCADE)
+    saved_at = models.DateTimeField(auto_now_add=True)  # 저장 시간
+
+class Subscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    subscription_type = models.CharField(max_length=100)  # 구독 종류 (예: '월간', '연간')
+    created_at = models.DateTimeField(auto_now_add=True)  # 구독 시작 시간

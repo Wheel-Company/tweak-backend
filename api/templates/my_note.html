@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Note - Sentence Checker</title>
+</head>
+<body>
+    <h1>Sentence Checker</h1>
+    <div>
+        <label for="sentence">Enter your sentence:</label>
+        <textarea id="sentence" name="sentence" rows="4" cols="50" required></textarea>
+        <button onclick="checkSentence()">Check Sentence</button>
+    </div>
+    <div id="result">
+        <!-- Result will be displayed here -->
+    </div>
+
+    <script>
+      async function checkSentence() {
+        var sentence = document.getElementById("sentence").value;
+        const requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Cookie': 'csrftoken=YOUR_CSRF_TOKEN_HERE' },
+          body: JSON.stringify({ text: sentence })
+        };
+        
+        try {
+          const response = await fetch('/grammar-correction/', requestOptions);
+          const data = await response.json();
+          
+          var resultDiv = document.getElementById("result");
+          resultDiv.innerHTML = "<p style='color: green;'>The corrected sentence is: " + data.corrected_text + "</p>";
+          if (sentence === data.corrected_text) {
+            resultDiv.innerHTML += "<p style='color: green;'>The sentence is correct.</p>";
+          } else {
+            resultDiv.innerHTML += "<p style='color: red;'>The sentence is incorrect.</p>";
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+    </script>
+</body>
+</html>
