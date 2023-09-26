@@ -8,15 +8,21 @@ class Profile(models.Model):
     is_email_registered = models.BooleanField(default=False)
     last_login_at = models.DateTimeField(null=True, blank=True)  # 마지막 로그인 시간
 
+LEVEL_CHOICES = [
+    (1, '대분류'),
+    (2, '중분류'),
+    (3, '소분류'),
+]
 class Category(models.Model):
     name = models.CharField(max_length=100)
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
-    level = models.IntegerField(default=1)
+    level = models.IntegerField(choices=LEVEL_CHOICES, default=1)
 
 class Difficulty(models.Model):
     name = models.CharField(max_length=100, default='Beginner')
 
 class GrammarContent(models.Model):
+    content_code = models.CharField(max_length=20, unique=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     difficulty = models.ForeignKey(Difficulty, on_delete=models.CASCADE, null=True)
     day = models.IntegerField(default=1)
@@ -59,11 +65,17 @@ class UserActivityLog(models.Model):
     activity_detail = models.TextField(null=True, blank=True)  # 활동의 세부 정보
     activity_date = models.DateTimeField(auto_now_add=True)
 
+REPORT_TYPE_CHOICES = [
+    ('contens', '문제이상'),
+    ('answer', '답변이상'),
+]
+
 class Report(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content_id = models.ForeignKey(GrammarContent, on_delete=models.CASCADE)
     reason = models.TextField()  # 신고 이유
     language = models.CharField(max_length=10)  # 언어 설정
+    report_type = models.CharField(choices=REPORT_TYPE_CHOICES, max_length=50)
     reported_at = models.DateTimeField(auto_now_add=True)  # 신고 시간
 
 class SavedQuestion(models.Model):

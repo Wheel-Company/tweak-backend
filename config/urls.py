@@ -85,6 +85,8 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('grammar-correction/', GrammarCorrectionView.as_view(), name='grammar-correction'),
     path('myNote/', views.my_note, name='my_note'),
+    path('last_sub_category/', views.get_last_sub_category, name='get_last_sub_category'),
+    path('get_answer_stats/', views.get_answer_stats, name='get_answer_stats'),
     # path('api/', include('api.urls')),  # Replace with your app's URL patterns
 ]
 
