@@ -23,6 +23,70 @@ from django.views.decorators.csrf import csrf_exempt
 from api.models import *
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
+from django.db.models import Count, F
+from datetime import datetime, timedelta
+from django.utils import timezone
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from rest_framework.response import Response
+
+
+from api.models import Answer, GrammarContent  # 실제 모델 경로에 따라 수정
+
+@api_view(["GET"])
+@authentication_classes([JSONWebTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_last_sub_category(request, user_id):
+    try:
+        last_answer = Answer.objects.filter(user_id=user_id).latest('answered_at')
+        last_grammar_content = GrammarContent.objects.get(id=last_answer.grammar_content_id)
+        last_category = Category.objects.get(id=last_grammar_content.category_id)
+        
+        if last_category.level == 3:  # 소분류
+            return JsonResponse({"redirect_to": f"/sub_category/{last_category.id}/"})
+        
+        # 만약 소분류가 아니라면, 추가적인 로직을 여기에 작성
+    except Answer.DoesNotExist:
+        # 최초 사용자
+        return JsonResponse({"redirect_to": "/main_category/"})
+        
+@api_view(["GET"])
+@authentication_classes([JSONWebTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_answer_stats(request):
+    # 7일 전 날짜와 시간을 구합니다.
+    past_week_date = timezone.now() - timedelta(days=7)
+    past_week_date = past_week_date.replace(hour=0, minute=1, second=0, microsecond=0)
+
+    # 현재 시간을 구합니다.
+    current_time = timezone.now().replace(hour=23, minute=59, second=59, microsecond=0)
+
+    # 해당 사용자의 최근 7일간의 답변을 필터링합니다.
+    answer_results = Answer.objects.filter(
+        user=request.user,
+        answered_at__range=(past_week_date, current_time)
+    )
+
+    total_count = answer_results.count()
+    correct_count = answer_results.filter(is_correct=True).count()
+
+    if total_count == 0:
+        return Response({
+            "message": "No answer data available",
+            "correct": 0,
+            "incorrect": 0,
+            "correct_rate": 0
+        })
+
+    incorrect_count = total_count - correct_count
+    correct_rate = (correct_count / total_count) * 100
+
+    return Response({
+        "correct": correct_count,
+        "incorrect": incorrect_count,
+        "correct_rate": correct_rate
+    })
 
 # Create your views here.
 
