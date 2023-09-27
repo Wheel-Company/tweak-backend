@@ -1,39 +1,40 @@
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.conf import settings
-from django.shortcuts import render
-from rest_framework import viewsets, status
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.response import Response
-from rest_framework.decorators import permission_classes, authentication_classes
-from rest_framework.permissions import (
-    IsAuthenticatedOrReadOnly,
-    IsAuthenticated,
-    AllowAny,
-)
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-from rest_framework import serializers
-
-# from config.utils import CustomSchema
-from django.db.models import Q, F
+from datetime import timedelta
 from functools import reduce
-import coreapi
-import json
-from django.db.models import Count, Prefetch, FilteredRelation
-from django.views.decorators.csrf import csrf_exempt
-from api.models import *
-from django.http import HttpResponse, JsonResponse
-from rest_framework.decorators import api_view
-from django.db.models import Count, F
-from datetime import datetime, timedelta
+from django.shortcuts import render
+from django.http import JsonResponse
 from django.utils import timezone
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q, Count, F
+from rest_framework import viewsets, status, serializers
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from rest_framework.authentication import SessionAuthentication  # 다시 추가
+from api.models import Answer, GrammarContent, Category,User  # 실제 모델 경로에 따라 수정
+from api.models import Profile
 
 
-from api.models import Answer, GrammarContent  # 실제 모델 경로에 따라 수정
+# SNS 회원가입 후 DB 연동
+@api_view(["GET"])
+@authentication_classes([JSONWebTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def create_sns_user(request, sns_id, sns_type):
+    user = User.objects.create(username=sns_id)
+    profile = Profile.objects.create(user=user, sns_type=sns_type)
+    return Response(status=status.HTTP_201_CREATED, data={"profile_id": profile.id})
 
+# SNS 로그인 후 DB에서 유저 정보 연결
+@api_view(["GET"])
+@authentication_classes([JSONWebTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_sns_user(sns_id):
+    try:
+        user = User.objects.get(username=sns_id)
+        return user.profile
+    except User.DoesNotExist:
+        return None
+    
 @api_view(["GET"])
 @authentication_classes([JSONWebTokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -43,12 +44,13 @@ def get_last_sub_category(request, user_id):
         last_grammar_content = GrammarContent.objects.get(id=last_answer.grammar_content_id)
         last_category = Category.objects.get(id=last_grammar_content.category_id)
         
-        if last_category.level == 3:  # 소분류
-            return JsonResponse({"redirect_to": f"/sub_category/{last_category.id}/"})
+        if last_category.level == 3:
+            redirect_url = f"/sub_category/{last_category.id}/"
+            return JsonResponse({"redirect_to": redirect_url})
         
-        # 만약 소분류가 아니라면, 추가적인 로직을 여기에 작성
+        return JsonResponse({"redirect_to": "/main_category/"})
+        
     except Answer.DoesNotExist:
-        # 최초 사용자
         return JsonResponse({"redirect_to": "/main_category/"})
         
 @api_view(["GET"])

@@ -22,7 +22,7 @@ class Difficulty(models.Model):
     name = models.CharField(max_length=100, default='Beginner')
 
 class GrammarContent(models.Model):
-    content_code = models.CharField(max_length=20, unique=True)
+    content_code = models.CharField(max_length=20, unique=True, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     difficulty = models.ForeignKey(Difficulty, on_delete=models.CASCADE, null=True)
     day = models.IntegerField(default=1)
@@ -75,7 +75,7 @@ class Report(models.Model):
     content_id = models.ForeignKey(GrammarContent, on_delete=models.CASCADE)
     reason = models.TextField()  # 신고 이유
     language = models.CharField(max_length=10)  # 언어 설정
-    report_type = models.CharField(choices=REPORT_TYPE_CHOICES, max_length=50)
+    report_type = models.CharField(choices=REPORT_TYPE_CHOICES, max_length=50, unique=True, null=True, blank=True)
     reported_at = models.DateTimeField(auto_now_add=True)  # 신고 시간
 
 class SavedQuestion(models.Model):
@@ -88,4 +88,6 @@ class Subscription(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     subscription_type = models.CharField(max_length=100)  # 구독 종류 (예: '월간', '연간')
+    price = models.DecimalField(default=False,max_digits=10, decimal_places=2,null=True, blank=True)  # 가격
+    description = models.TextField(default=False,null=True, blank=True)  # 설명
     created_at = models.DateTimeField(auto_now_add=True)  # 구독 시작 시간
