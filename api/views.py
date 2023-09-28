@@ -1,40 +1,96 @@
+# Standard Library Imports
 from datetime import timedelta
 from functools import reduce
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.utils import timezone
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q, Count, F
+import json
+
+# Third-party imports
 from rest_framework import viewsets, status, serializers
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-from rest_framework.authentication import SessionAuthentication  # 다시 추가
-from api.models import Answer, GrammarContent, Category,User  # 실제 모델 경로에 따라 수정
-from api.models import Profile
+from rest_framework.authentication import SessionAuthentication
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
+# Django imports
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.utils import timezone
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q, Count, F
+
+# Local imports
+from api.models import Answer, GrammarContent, Category, User, Profile  # 실제 모델 경로에 따라 수정
 
 # SNS 회원가입 후 DB 연동
-@api_view(["GET"])
+@swagger_auto_schema(
+    method="POST",
+    operation_description="Create SNS user and link to DB",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "sns_id": openapi.Schema(type=openapi.TYPE_STRING, description="SNS ID of the user"),
+            "sns_type": openapi.Schema(type=openapi.TYPE_STRING, description="SNS type"),
+        },
+    ),
+    responses={201: "User profile created successfully"},
+)
+@api_view(["POST"])
 @authentication_classes([JSONWebTokenAuthentication])
 @permission_classes([IsAuthenticated])
-def create_sns_user(request, sns_id, sns_type):
-    user = User.objects.create(username=sns_id)
-    profile = Profile.objects.create(user=user, sns_type=sns_type)
-    return Response(status=status.HTTP_201_CREATED, data={"profile_id": profile.id})
+def create_sns_user(request):
+    """
+    Create a new SNS user and link to the database.
+    """
+    try:
+        sns_id = request.data.get("sns_id")
+        sns_type = request.data.get("sns_type")
+        user = User.objects.create(username=sns_id)
+        profile = Profile.objects.create(user=user, sns_type=sns_type)
+        return Response(status=status.HTTP_201_CREATED, data={"profile_id": profile.id})
+    except Exception as e:
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": str(e)})
 
 # SNS 로그인 후 DB에서 유저 정보 연결
+@swagger_auto_schema(
+    method="GET",
+    operation_description="Get SNS user profile",
+    manual_parameters=[
+        openapi.Parameter(
+            name="sns_id",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="SNS ID of the user",
+        ),
+    ],
+    responses={200: "Successful response description here"},
+)
 @api_view(["GET"])
 @authentication_classes([JSONWebTokenAuthentication])
 @permission_classes([IsAuthenticated])
-def get_sns_user(sns_id):
+def get_sns_user(request, sns_id):
+    """Retrieve an SNS user's profile from the database."""
     try:
         user = User.objects.get(username=sns_id)
-        return user.profile
+        return Response(status=status.HTTP_200_OK, data={"profile": user.profile})
     except User.DoesNotExist:
-        return None
+        return Response(status=status.HTTP_404_NOT_FOUND, data={"detail": "User does not exist"})
     
+
+@swagger_auto_schema(
+    method="GET",
+    operation_description="Get the last subcategory for a user",
+    manual_parameters=[
+        openapi.Parameter(
+            name="user_id",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_INTEGER,
+            description="User ID",
+        ),
+    ],
+    responses={200: "Successful response description here"},
+)
 @api_view(["GET"])
 @authentication_classes([JSONWebTokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -53,6 +109,12 @@ def get_last_sub_category(request, user_id):
     except Answer.DoesNotExist:
         return JsonResponse({"redirect_to": "/main_category/"})
         
+
+@swagger_auto_schema(
+    method="GET",
+    operation_description="Get answer statistics for the last 7 days",
+    responses={200: "Successful response description here"},
+)
 @api_view(["GET"])
 @authentication_classes([JSONWebTokenAuthentication])
 @permission_classes([IsAuthenticated])

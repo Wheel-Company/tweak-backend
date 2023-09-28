@@ -1,12 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-class Profile(models.Model):    
+class Profile(models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=['nickname']),
+            models.Index(fields=['last_login_at']),
+        ]    
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    phone_number = models.CharField(max_length=20, blank=True)
     nickname = models.CharField(max_length=100, blank=True)
-    is_email_registered = models.BooleanField(default=False)
     last_login_at = models.DateTimeField(null=True, blank=True)  # 마지막 로그인 시간
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  # 마지막 로그인 시간
 
 LEVEL_CHOICES = [
     (1, '대분류'),
