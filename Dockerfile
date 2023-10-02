@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM ubuntu:22.04
+FROM arm64v8/python:3
 RUN apt-get -y update
 RUN apt-get install -y default-libmysqlclient-dev
 RUN apt-get install -y curl
