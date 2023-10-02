@@ -5,6 +5,7 @@ RUN apt-get install -y default-libmysqlclient-dev
 RUN apt-get install -y libmysqlclient-dev
 RUN apt-get install -y libssl-dev
 RUN apt-get install -y python3.11-dev
+RUN apt-get install python3-pip
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
