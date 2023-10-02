@@ -1,5 +1,16 @@
+# Standard Library Imports
 import datetime
 import hashlib
+
+# Third-party imports
+from rest_framework import status, viewsets, serializers
+from rest_framework.decorators import action, permission_classes, authentication_classes, api_view
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+from rest_framework.response import Response
+
+# Django imports
+from django.contrib.auth.models import User, update_last_login
+from django.conf import settings
 from django.contrib.auth.models import User, update_last_login
 from rest_framework import status, viewsets, serializers
 from rest_framework.decorators import action
@@ -103,6 +114,18 @@ class AccountResetTokenGenerator(PasswordResetTokenGenerator):
 
 account_reset_token = AccountResetTokenGenerator()
 
+@csrf_exempt
+@api_view(["GET"])
+@permission_classes(
+    [
+        AllowAny,
+    ]
+)
+def health_check(request):
+    """
+    Endpoint for health check.
+    """
+    return HttpResponse("OK")
 
 def activate(request, uid64, token):
     uid = force_str(urlsafe_base64_decode(uid64))
