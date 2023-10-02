@@ -3,7 +3,9 @@ FROM ubuntu:22.04
 RUN apt-get -y update
 RUN apt-get install -y default-libmysqlclient-dev
 RUN apt-get install -y libmysqlclient-dev
-FROM python:3.11.5-alpine
+RUN apt-get install -y libssl-dev
+RUN apt-get install -y python3.11-dev
+
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 WORKDIR /app
