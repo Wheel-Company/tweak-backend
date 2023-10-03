@@ -1,8 +1,17 @@
-# syntax=docker/dockerfile:1
-FROM arm64v8/python:3
+# Use the official Python image as the base image
+FROM python:3.11
 
+# Set the working directory in the container
 WORKDIR /app
-COPY requirements.txt /app/
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-COPY . /app/
+
+# Copy the application code to the container
+COPY . /app
+
+# Install the required packages
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Expose the port that your Django application will run on
+EXPOSE 8000
+
+# Start the Django application
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
