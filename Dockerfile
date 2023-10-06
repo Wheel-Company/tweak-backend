@@ -1,5 +1,5 @@
 # Use the official Python image as the base image
-FROM ubuntu:22.04
+FROM arm64v8/ubuntu:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update
