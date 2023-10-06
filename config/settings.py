@@ -8,7 +8,6 @@ pymysql.install_as_MySQLdb()
 
 # 기본 디렉토리 설정
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-BASE_DIR_BACKEND = BASE_DIR
 
 # 정적 파일 설정
 STATIC_URL = "/static/"

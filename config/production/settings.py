@@ -53,22 +53,3 @@ CSRF_TRUSTED_ORIGINS = (
     "http://127.0.0.1:3000",
     "http://localhost:3000",
 )
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "file": {
-            "level": "ERROR",
-            "class": "logging.FileHandler",
-            "filename": os.path.join(BASE_DIR_BACKEND, "logs") + "/log.txt",
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["file"],
-            "level": "ERROR",
-            "propagate": True,
-        },
-    },
-}
