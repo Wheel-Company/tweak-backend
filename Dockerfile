@@ -47,7 +47,7 @@ RUN update-alternatives --install /usr/bin/python python /usr/local/bin/python3.
 RUN set -xe && apt-get -yqq update && apt-get -yqq install python3-pip
 
 # Install the required packages
-RUN pip install --no-cache-dir -r requirements.txt
+#RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose the port that your Django application will run on
 EXPOSE 8000
