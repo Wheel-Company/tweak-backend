@@ -17,8 +17,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # 보안 설정
 SECRET_KEY = 'django-insecure-=e!g&p-3@smi7j^=@hx06v)=m^w$5q6@+1nbl@@n%fg$53wf#e'
 DEBUG = True
-ALLOWED_HOSTS = []
-PORT = 8001  # Change to a different port
+ALLOWED_HOSTS = ['*']
+
 SWAGGER_SETTINGS = {
     'DEFAULT_AUTO_SCHEMA_CLASS': 'drf_yasg.inspectors.SwaggerAutoSchema',
 }
@@ -27,7 +27,6 @@ BATON = {
     "SITE_HEADER": "TWEAK BACK OFFICE",
     "SITE_TITLE": "TWEAK BACK OFFICE",
     "INDEX_TITLE": "관리 페이지",
-    # "SUPPORT_HREF": "https://juice.co.kr/",
     "SUPPORT_HREF": "mailto:tweaker.202306@gmail.com",
     "COPYRIGHT": "copyright © WheelCompany All Rights Reserved.",
     "POWERED_BY": '<a href="https://tweak-english.com/">TWEAK</a>',
@@ -134,7 +133,7 @@ TEMPLATES = [
 ]
 
 # WSGI 앱 설정
-WSGI_APPLICATION = 'config.dev.wsgi.application'
+WSGI_APPLICATION = 'config.production.wsgi.application'
 
 # 데이터베이스 설정
 DATABASES = {
