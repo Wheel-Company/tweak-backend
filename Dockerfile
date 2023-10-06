@@ -1,7 +1,10 @@
 # Use the official Python image as the base image
-FROM arm64v8/ubuntu:latest
+FROM ubuntu:20.04 as python_builder
 
+ARG python_version=3.11.4
+ARG python_major_version
 ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get -y update
 RUN apt-get install -y python3 python3-pip wget locales supervisor
 RUN apt-get install -y uwsgi-plugin-python3
