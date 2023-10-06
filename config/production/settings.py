@@ -8,9 +8,10 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 # ALLOWED_HOSTS =["13.125.139.26","tweak-english.com","localhost","127.0.0.1"]
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
-
+WSGI_APPLICATION = 'config.production.wsgi.application'
 DATABASES = {
     "default": {
+       'ENGINE': 'django.db.backends.mysql',
        "NAME": "tweak",
        "USER": "wheelcompany",
        "PASSWORD": "Wheel202307!",
@@ -53,21 +54,21 @@ CSRF_TRUSTED_ORIGINS = (
     "http://localhost:3000",
 )
 
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "handlers": {
-#         "file": {
-#             "level": "ERROR",
-#             "class": "logging.FileHandler",
-#             "filename": os.path.join(BASE_DIR_BACKEND, "logs") + "/log.txt",
-#         },
-#     },
-#     "loggers": {
-#         "django": {
-#             "handlers": ["file"],
-#             "level": "ERROR",
-#             "propagate": True,
-#         },
-#     },
-# }
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "ERROR",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR_BACKEND, "logs") + "/log.txt",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+    },
+}
