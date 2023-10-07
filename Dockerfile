@@ -8,16 +8,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update
 RUN apt-get install -y python3 python3-pip wget locales supervisor
 RUN apt-get install -y uwsgi-plugin-python3
-RUN apt-get install -y libffi-dev 
+RUN apt-get install -y libffi-dev
 RUN apt-get install -y libmysqlclient-dev
 
 RUN mkdir /app
 
 RUN sed -i -e 's/# ko_KR.UTF-8 UTF-8/ko_KR.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen
-ENV LANG ko_KR.UTF-8  
+ENV LANG ko_KR.UTF-8
 ENV LANGUAGE ko_KR.UTF-8
-ENV LC_ALL ko_KR.UTF-8 
+ENV LC_ALL ko_KR.UTF-8
 
 WORKDIR /app
 
@@ -43,7 +43,7 @@ RUN python3 -m pip install -U -r requirements.txt
 # RUN pip install --no-cache-dir -r requirements.txt
 
 # # Expose the port that your Django application will run on
-EXPOSE 8000
+EXPOSE 80
 
 # # Start the Django application
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8001"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
