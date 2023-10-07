@@ -8,4 +8,4 @@ class Command(BaseCommand):
       pass
 
   def handle(self, *args, **options):
-      subprocess.Popen(['python', 'manage.py', 'runserver', '0.0.0.0:80'])
+      subprocess.Popen(['python', 'manage.py', 'runserver', '0.0.0.0:8000'])
