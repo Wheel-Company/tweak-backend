@@ -1,5 +1,4 @@
 # syntax=docker/dockerfile:1
-FROM arm64v8/python:3
 FROM python:3.11.5
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
