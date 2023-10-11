@@ -7,11 +7,13 @@ import json
 from rest_framework import viewsets, status, serializers
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from rest_framework.authentication import SessionAuthentication
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from django.core.exceptions import ObjectDoesNotExist
 
 # Django imports
 from django.shortcuts import render
@@ -36,9 +38,13 @@ from api.models import Answer, GrammarContent, Category, User, Profile  # 실제
     ),
     responses={201: "User profile created successfully"},
 )
+@csrf_exempt
 @api_view(["POST"])
-@authentication_classes([JSONWebTokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes(
+    [
+        AllowAny,
+    ]
+)
 def create_sns_user(request):
     """
     Create a new SNS user and link to the database.
@@ -66,9 +72,9 @@ def create_sns_user(request):
     ],
     responses={200: "Successful response description here"},
 )
+@csrf_exempt
 @api_view(["GET"])
-@authentication_classes([JSONWebTokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes((AllowAny,))
 def get_sns_user(request, sns_id):
     """Retrieve an SNS user's profile from the database."""
     try:
@@ -91,9 +97,9 @@ def get_sns_user(request, sns_id):
     ],
     responses={200: "Successful response description here"},
 )
+@csrf_exempt
 @api_view(["GET"])
-@authentication_classes([JSONWebTokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes((AllowAny,))
 def get_last_sub_category(request, user_id):
     try:
         last_answer = Answer.objects.filter(user_id=user_id).latest('answered_at')
@@ -115,10 +121,17 @@ def get_last_sub_category(request, user_id):
     operation_description="Get answer statistics for the last 7 days",
     responses={200: "Successful response description here"},
 )
+@csrf_exempt
 @api_view(["GET"])
-@authentication_classes([JSONWebTokenAuthentication])
-@permission_classes([IsAuthenticated])
-def get_answer_stats(request):
+@permission_classes((AllowAny,))
+def get_answer_stats(request, user_id):
+    try:
+        # Try to get the user object
+        user = User.objects.get(id=user_id)
+    except ObjectDoesNotExist:
+        # Return an error response if the user is not found
+        return Response(status=status.HTTP_404_NOT_FOUND, data={"detail": "User does not exist"})
+
     # 7일 전 날짜와 시간을 구합니다.
     past_week_date = timezone.now() - timedelta(days=7)
     past_week_date = past_week_date.replace(hour=0, minute=1, second=0, microsecond=0)
@@ -128,7 +141,7 @@ def get_answer_stats(request):
 
     # 해당 사용자의 최근 7일간의 답변을 필터링합니다.
     answer_results = Answer.objects.filter(
-        user=request.user,
+        user=user,
         answered_at__range=(past_week_date, current_time)
     )
 
@@ -251,8 +264,12 @@ def my_note(request):
 def getViewSet(modelClass):
     # @permission_classes((IsAuthenticatedOrReadOnly,))
     # @authentication_classes((JSONWebTokenAuthentication, SessionAuthentication))
-    @permission_classes((IsAuthenticatedOrReadOnly,))
-    @authentication_classes((JSONWebTokenAuthentication, SessionAuthentication))
+    @permission_classes(
+    [
+        AllowAny,
+    ]
+    )
+    # @authentication_classes((JSONWebTokenAuthentication, SessionAuthentication))
     class ApiViewSet(viewsets.ModelViewSet):
         queryset = modelClass.objects.all().order_by("-id")
         serializer_class = getSerializer(modelClass)

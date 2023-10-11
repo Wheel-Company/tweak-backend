@@ -57,27 +57,22 @@ class ObtainAuthTokenWithLogin(BaseJSONWebTokenAPIView):
         return result
 
 router = routers.DefaultRouter()
-router.register(r"api-user", UserViewSet)
+# router.register(r"api-user", UserViewSet)
 
 urlpatterns = [
     path('health_check/', health_check, name='health_check'),
     path("admin/", admin.site.urls),
     path("baton/", include("baton.urls")),
-    path("api-auth/", include(urls)),
     path("api-", include("api.urls")),
     path("", include(router.urls)),
-    path("user-verify/", verify),
-    path(r"api/token/", ObtainAuthTokenWithLogin.as_view()),
-    path(r"api/token/verify/", verify_jwt_token),
-    path(r"api/token/refresh/", refresh_jwt_token),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('grammar-correction/', GrammarCorrectionView.as_view(), name='grammar-correction'),
     path('myNote/', views.my_note, name='my_note'),
-    path('last_sub_category/', views.get_last_sub_category, name='get_last_sub_category'),
-    path('get_answer_stats/', views.get_answer_stats, name='get_answer_stats'),
-    path('get_sns_user/', views.get_sns_user, name='get_sns_user'),
+    path('last_sub_category/<int:user_id>/', views.get_last_sub_category, name='get_last_sub_category'),
+    path('get_answer_stats/<int:user_id>/', views.get_answer_stats, name='get_answer_stats'),
+    path('get_sns_user/<str:sns_id>/', views.get_sns_user, name='get_sns_user'),
     path('create_sns_user/', views.create_sns_user, name='get_sns_user'),
 ]
 

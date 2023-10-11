@@ -2,14 +2,11 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Profile(models.Model):
-    class Meta:
-        indexes = [
-            models.Index(fields=['nickname']),
-            models.Index(fields=['last_login_at']),
-        ]    
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     nickname = models.CharField(max_length=100, blank=True)
     last_login_at = models.DateTimeField(null=True, blank=True)  # 마지막 로그인 시간
+    sns_type = models.CharField(max_length=30, null=True, blank=True)
+    sns_id = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)  # 마지막 로그인 시간
 

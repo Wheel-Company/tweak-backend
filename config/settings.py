@@ -8,7 +8,6 @@ pymysql.install_as_MySQLdb()
 
 # 기본 디렉토리 설정
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-BASE_DIR_BACKEND = BASE_DIR
 
 # 정적 파일 설정
 STATIC_URL = "/static/"
@@ -17,7 +16,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # 보안 설정
 SECRET_KEY = 'django-insecure-=e!g&p-3@smi7j^=@hx06v)=m^w$5q6@+1nbl@@n%fg$53wf#e'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 SWAGGER_SETTINGS = {
     'DEFAULT_AUTO_SCHEMA_CLASS': 'drf_yasg.inspectors.SwaggerAutoSchema',
@@ -27,7 +26,6 @@ BATON = {
     "SITE_HEADER": "TWEAK BACK OFFICE",
     "SITE_TITLE": "TWEAK BACK OFFICE",
     "INDEX_TITLE": "관리 페이지",
-    # "SUPPORT_HREF": "https://juice.co.kr/",
     "SUPPORT_HREF": "mailto:tweaker.202306@gmail.com",
     "COPYRIGHT": "copyright © WheelCompany All Rights Reserved.",
     "POWERED_BY": '<a href="https://tweak-english.com/">TWEAK</a>',
@@ -186,6 +184,8 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.BasicAuthentication",
         "rest_framework.authentication.TokenAuthentication",
     ),
+    # 'DEFAULT_AUTHENTICATION_CLASSES': [],
+    
 }
 
 # JWT 설정
