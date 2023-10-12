@@ -34,17 +34,14 @@ from api.models import Answer, GrammarContent, Category, User, Profile  # 실제
         properties={
             "sns_id": openapi.Schema(type=openapi.TYPE_STRING, description="SNS ID of the user"),
             "sns_type": openapi.Schema(type=openapi.TYPE_STRING, description="SNS type"),
+            "email": openapi.Schema(type=openapi.TYPE_STRING, description="Email of the user"),
         },
     ),
     responses={201: "User profile created successfully"},
 )
 @csrf_exempt
 @api_view(["POST"])
-@permission_classes(
-    [
-        AllowAny,
-    ]
-)
+@permission_classes([AllowAny])
 def create_sns_user(request):
     """
     Create a new SNS user and link to the database.
@@ -52,11 +49,15 @@ def create_sns_user(request):
     try:
         sns_id = request.data.get("sns_id")
         sns_type = request.data.get("sns_type")
-        user = User.objects.create(username=sns_id)
-        profile = Profile.objects.create(user=user, sns_type=sns_type)
-        return Response(status=status.HTTP_201_CREATED, data={"profile_id": profile.id})
+        email = request.data.get("email")  # 추가된 email 정보를 받음
+        # 기존 User 모델의 email 필드에 이메일 저장
+        user, created = User.objects.get_or_create(username=sns_id, defaults={"email": email})
+        profile, profile_created = Profile.objects.get_or_create(user=user, sns_id=sns_id,sns_type=sns_type)
+        
+        return Response(status=status.HTTP_201_CREATED, data={"user_id": user.id})
     except Exception as e:
         return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": str(e)})
+
 
 # SNS 로그인 후 DB에서 유저 정보 연결
 @swagger_auto_schema(
@@ -79,7 +80,7 @@ def get_sns_user(request, sns_id):
     """Retrieve an SNS user's profile from the database."""
     try:
         user = User.objects.get(username=sns_id)
-        return Response(status=status.HTTP_200_OK, data={"profile": user.profile})
+        return Response(status=status.HTTP_200_OK, data={"user_id": user.id})
     except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND, data={"detail": "User does not exist"})
     
@@ -165,7 +166,6 @@ def get_answer_stats(request, user_id):
         "correct_rate": correct_rate
     })
 
-# Create your views here.
 
 ITEM_COUNT_PER_PAGE = 30
 SCHEMA_FILED_EXCEPT = [
