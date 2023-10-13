@@ -94,3 +94,12 @@ class Subscription(models.Model):
     price = models.DecimalField(default=False,max_digits=10, decimal_places=2,null=True, blank=True)  # 가격
     description = models.TextField(default=False,null=True, blank=True)  # 설명
     created_at = models.DateTimeField(auto_now_add=True)  # 구독 시작 시간
+
+class ContentData(models.Model):
+    file_name = models.CharField(max_length=255)
+    file_location = models.CharField(max_length=255)  # 파일이 저장된 경로
+    file_management_code = models.CharField(max_length=50)  # 파일 관리 코드
+    version = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.file_name
