@@ -23,7 +23,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count, F
 
 # Local imports
-from api.models import Answer, GrammarContent, Category, User, Profile  # 실제 모델 경로에 따라 수정
+from api.models import Answer, WritingContent, Category, User, Profile  # 실제 모델 경로에 따라 수정
 
 # SNS 회원가입 후 DB 연동
 @swagger_auto_schema(
@@ -104,8 +104,8 @@ def get_sns_user(request, sns_id):
 def get_last_sub_category(request, user_id):
     try:
         last_answer = Answer.objects.filter(user_id=user_id).latest('answered_at')
-        last_grammar_content = GrammarContent.objects.get(id=last_answer.grammar_content_id)
-        last_category = Category.objects.get(id=last_grammar_content.category_id)
+        last_writing_content = WritingContent.objects.get(id=last_answer.writing_content_id)
+        last_category = Category.objects.get(id=last_writing_content.category_id)
         
         if last_category.level == 3:
             redirect_url = f"/sub_category/{last_category.id}/"

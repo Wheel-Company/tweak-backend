@@ -12,11 +12,11 @@ tweak-backend
 │  │  ├─ .DS_Store
 │  │  └─ commands
 │  │     ├─ .DS_Store
-│  │     ├─ grammar_content.xlsx
+│  │     ├─ writing_content.xlsx
 │  │     ├─ import_category_data.py
-│  │     ├─ import_grammar_content_data.py
+│  │     ├─ import_writing_content_data.py
 │  │     ├─ tweak_category.xlsx
-│  │     └─ ~$grammar_content.xlsx
+│  │     └─ ~$writing_content.xlsx
 │  ├─ migrations
 │  │  ├─ 0001_initial.py
 │  │  ├─ 0002_grammarquestion_category_level_profile_nickname_and_more.py
@@ -24,9 +24,9 @@ tweak-backend
 │  │  ├─ 0004_remove_usergrammarquestion_grammar_question_and_more.py
 │  │  ├─ 0005_difficulty_remove_question_question_text_and_more.py
 │  │  ├─ 0006_remove_question_question_text_ko_and_more.py
-│  │  ├─ 0007_rename_question_grammarcontent_and_more.py
-│  │  ├─ 0008_alter_grammarcontent_question_text_en_and_more.py
-│  │  ├─ 0009_banner_coupon_expiry_date_grammarcontent_sequence_and_more.py
+│  │  ├─ 0007_rename_question_WritingContent_and_more.py
+│  │  ├─ 0008_alter_WritingContent_question_text_en_and_more.py
+│  │  ├─ 0009_banner_coupon_expiry_date_WritingContent_sequence_and_more.py
 │  │  └─ __init__.py
 │  ├─ models.py
 │  ├─ templates

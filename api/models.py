@@ -19,11 +19,12 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     level = models.IntegerField(choices=LEVEL_CHOICES, default=1)
+    code = models.CharField(max_length=6, unique=True, null=True, blank=True)
 
 class Difficulty(models.Model):
     name = models.CharField(max_length=100, default='Beginner')
 
-class GrammarContent(models.Model):
+class WritingContent(models.Model):
     content_code = models.CharField(max_length=20, unique=True, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     difficulty = models.ForeignKey(Difficulty, on_delete=models.CASCADE, null=True)
@@ -33,11 +34,11 @@ class GrammarContent(models.Model):
     content_text = models.JSONField(null=True)
 
     class Meta:
-        db_table = 'api_grammar_content'
+        db_table = 'api_writing_content'
 
 class Answer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    grammar_content = models.ForeignKey(GrammarContent, on_delete=models.CASCADE)
+    writing_content = models.ForeignKey(WritingContent, on_delete=models.CASCADE)
     user_answer_text = models.TextField()
     is_correct = models.BooleanField(default=False)
     answered_at = models.DateTimeField(auto_now_add=True)
@@ -74,7 +75,7 @@ REPORT_TYPE_CHOICES = [
 
 class Report(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    content_id = models.ForeignKey(GrammarContent, on_delete=models.CASCADE)
+    content_id = models.ForeignKey(WritingContent, on_delete=models.CASCADE)
     reason = models.TextField()  # 신고 이유
     language = models.CharField(max_length=10)  # 언어 설정
     report_type = models.CharField(choices=REPORT_TYPE_CHOICES, max_length=50, unique=True, null=True, blank=True)
@@ -82,7 +83,7 @@ class Report(models.Model):
 
 class SavedQuestion(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    content_text = models.ForeignKey(GrammarContent, on_delete=models.CASCADE)
+    content_text = models.ForeignKey(WritingContent, on_delete=models.CASCADE)
     saved_at = models.DateTimeField(auto_now_add=True)  # 저장 시간
 
 class Subscription(models.Model):
