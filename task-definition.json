@@ -1,5 +1,5 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:833931369890:task-definition/tweak-task-definition:36",
+    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:833931369890:task-definition/tweak-task-definition:39",
     "containerDefinitions": [
         {
             "name": "tweak",
