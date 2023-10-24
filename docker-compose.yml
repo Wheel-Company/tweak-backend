@@ -15,7 +15,7 @@ services:
       - ./config/production/uwsgi.ini:/etc/uwsgi/apps-enabled/uwsgi.ini
       - ./config/production/supervisor.conf:/etc/supervisor/conf.d/supervisor.conf
     ports:
-      - "80:80"
+      - "80:8000"
     restart: "always"
     command: >
       sh -c "
@@ -25,5 +25,5 @@ services:
         # python3 manage.py uwsgi
         # service supervisor start
         # service nginx start
-        python3 manage.py runserver 0.0.0.0:80
+        python3 manage.py runserver 0.0.0.0:8000
         tail -f /dev/null"
