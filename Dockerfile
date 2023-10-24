@@ -21,16 +21,16 @@ ENV LC_ALL ko_KR.UTF-8
 
 WORKDIR /app
 
-RUN sed -i '1 i\openssl_conf = default_conf' /etc/ssl/openssl.cnf
-RUN echo '[default_conf]' >> /etc/ssl/openssl.cnf
-RUN echo 'ssl_conf = ssl_sect' >> /etc/ssl/openssl.cnf
-RUN echo '' >> /etc/ssl/openssl.cnf
-RUN echo '[ssl_sect]' >> /etc/ssl/openssl.cnf
-RUN echo 'system_default = system_default_sect' >> /etc/ssl/openssl.cnf
-RUN echo '' >> /etc/ssl/openssl.cnf
-RUN echo '[system_default_sect]' >> /etc/ssl/openssl.cnf
-RUN echo 'MinProtocol = TLSv1' >> /etc/ssl/openssl.cnf
-RUN echo 'CipherString = DEFAULT@SECLEVEL=1' >> /etc/ssl/openssl.cnf
+#RUN sed -i '1 i\openssl_conf = default_conf' /etc/ssl/openssl.cnf
+#RUN echo '[default_conf]' >> /etc/ssl/openssl.cnf
+#RUN echo 'ssl_conf = ssl_sect' >> /etc/ssl/openssl.cnf
+#RUN echo '' >> /etc/ssl/openssl.cnf
+#RUN echo '[ssl_sect]' >> /etc/ssl/openssl.cnf
+#RUN echo 'system_default = system_default_sect' >> /etc/ssl/openssl.cnf
+#RUN echo '' >> /etc/ssl/openssl.cnf
+#RUN echo '[system_default_sect]' >> /etc/ssl/openssl.cnf
+#RUN echo 'MinProtocol = TLSv1' >> /etc/ssl/openssl.cnf
+#RUN echo 'CipherString = DEFAULT@SECLEVEL=1' >> /etc/ssl/openssl.cnf
 
 RUN python3 -m pip install -U pip
 RUN python3 -m pip install -U setuptools
@@ -43,7 +43,7 @@ RUN python3 -m pip install -U -r requirements.txt
 # RUN pip install --no-cache-dir -r requirements.txt
 
 # # Expose the port that your Django application will run on
-EXPOSE 80
+EXPOSE 8000
 
 # # Start the Django application
-CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
