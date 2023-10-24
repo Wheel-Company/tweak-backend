@@ -15,7 +15,7 @@ services:
       - ./config/production/uwsgi.ini:/etc/uwsgi/apps-enabled/uwsgi.ini
       - ./config/production/supervisor.conf:/etc/supervisor/conf.d/supervisor.conf
     ports:
-      - "80:8000"
+      - "8000:8000"
     restart: "always"
     command: >
       sh -c "
