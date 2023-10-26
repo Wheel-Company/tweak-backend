@@ -43,7 +43,7 @@ RUN python3 -m pip install -U -r requirements.txt
 # RUN pip install --no-cache-dir -r requirements.txt
 
 # # Expose the port that your Django application will run on
-EXPOSE 8000
+EXPOSE 80
 
 # # Start the Django application
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
