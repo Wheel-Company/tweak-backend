@@ -54,9 +54,9 @@ def create_sns_user(request):
         user, created = User.objects.get_or_create(username=sns_id, defaults={"email": email})
         profile, profile_created = Profile.objects.get_or_create(user=user, sns_id=sns_id,sns_type=sns_type)
         
-        return Response(status=status.HTTP_201_CREATED, data={"user_id": user.id})
+        return JsonResponse(status=status.HTTP_201_CREATED, data={"user_id": user.id})
     except Exception as e:
-        return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": str(e)})
+        return JsonResponse(status=status.HTTP_400_BAD_REQUEST, data={"error": str(e)})
 
 
 # SNS 로그인 후 DB에서 유저 정보 연결

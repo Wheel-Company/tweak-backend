@@ -81,8 +81,8 @@ def decode_base64(data, altchars=b"+/"):
 
 
 # OpenAI API 키 설정
-openai.api_key = "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"
-openai.organization = "org-o6PzPP4eWUzHKG2oxcx3OfCX"
+openai.api_key = "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"
+openai.organization = "org-6fqXgACDDoBpHMfmZjuFrJcG"
 
 def grammar_correction(text):
     response = openai.Completion.create(

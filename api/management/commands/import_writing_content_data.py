@@ -26,6 +26,9 @@ class Command(BaseCommand):
 
         excel_files = os.listdir('./api/management/commands/__contents/write_contents')
 
+        # 파일을 알파벳 순서로 정렬
+        excel_files.sort()
+
         for excel_file in excel_files:
             file_start_time = datetime.datetime.now()  # Record the start time for this file
             self.stdout.write(f"Started processing {excel_file} at {file_start_time}")
@@ -47,14 +50,12 @@ class Command(BaseCommand):
                     for i, row in df.iterrows():
                         try:
                             major_category = Category.objects.get(name=row['대분류'], level=1)
-                            print("Full major_category object:", major_category.__dict__)
-                            print(f"major_category: {major_category.id}, {major_category.name}")
-                            print("major_category", major_category)
-                            print("sub_category", sub_category)
-                            print("detailed_category", detailed_category)
                             sub_category = Category.objects.get(name=row['중분류'], parent=major_category, level=2)
                             detailed_category = Category.objects.get(name=row['소분류'], parent=sub_category, level=3)
                             difficulty = Difficulty.objects.get(name=row['난이도'])
+                            print(f"major_category: {major_category.id}, {major_category.name}")
+                            print("sub_category", sub_category)
+                            print("detailed_category", detailed_category)
                         except Category.DoesNotExist as e:
                             errors.append(f"Row {i}: Category does not exist.")
                             self.stdout.write(f"Error on row {i}, column '대분류': {e}")
@@ -71,32 +72,34 @@ class Command(BaseCommand):
 
                         content_text = {lang: row[lang] for lang in ['ko', 'es', 'fr', 'it', 'ja', 'pt', 'de', 'ru', 'id', 'tr', 'hi', 'ar', 'pl', 'ms', 'uk', 'ro', 'vi']}
 
-                        sequence = str((i % 10) + 1)
-                        day = str(row['Day'])
+                        day = str(row['Day']).zfill(2)
+                        sequence = str((i % 10) + 1).zfill(2)
+
                         content_code = f"{detailed_category.code}{difficulty.id}{day}{sequence}"
 
                         data = {
                             "content_code": content_code,
                             "category": detailed_category.code,
                             "difficulty": difficulty.id,
-                            "day": row['Day'],
-                            "sequence": int(sequence),
+                            "day": int(day),  # 다시 정수로 변환
+                            "sequence": int(sequence),  # 다시 정수로 변환
                             "content_text_en": row['en'],
                             "content_text": content_text
                         }
-
+                        print("content_text_en", row['en'])
                         if save_to_db:
                             writing_content = WritingContent(
                                 content_code=content_code,
                                 category=detailed_category,
                                 difficulty=difficulty,
-                                day=row['Day'],
-                                sequence=int(sequence),
+                                day=int(day),  # 다시 정수로 변환
+                                sequence=int(sequence),  # 다시 정수로 변환
                                 content_text_en=row['en'],
                                 content_text=content_text
                             )
                             writing_content.save()
-                            data['id'] = writing_content.id  # Update the id after saving to DB
+                             # DB에 저장된 ID를 맨 처음에 추가
+                            data = {'id': writing_content.id, **data}
 
                         data_list.append(data)
 
