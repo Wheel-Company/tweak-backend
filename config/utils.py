@@ -4,7 +4,7 @@ from django.conf import settings
 import requests
 import json
 import openai
-
+import os
 
 class CustomSchema(AutoSchema):
     schema_list = []
@@ -79,9 +79,17 @@ def decode_base64(data, altchars=b"+/"):
 
 
 
+# API 키를 환경 변수에서 읽어옵니다.
+api_key = os.environ.get("OPENAI_API_KEY")
+# organization = os.environ.get("OPENAI_ORGANIZATION")
+
+# API 키가 존재하는지 확인합니다.
+if api_key is None:
+    raise Exception("API 키를 찾을 수 없습니다. 환경 변수를 설정하세요.")
 
 # OpenAI API 키 설정
-openai.api_key = "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"
+openai.api_key = api_key
+
 openai.organization = "org-6fqXgACDDoBpHMfmZjuFrJcG"
 
 def grammar_correction(text):
