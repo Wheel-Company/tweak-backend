@@ -5,6 +5,10 @@ import requests
 import json
 import openai
 import os
+from dotenv import load_dotenv
+
+# load .env
+load_dotenv()
 
 class CustomSchema(AutoSchema):
     schema_list = []
