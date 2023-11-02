@@ -24,6 +24,8 @@ from django.db.models import Q, Count, F
 
 # Local imports
 from api.models import Answer, WritingContent, Category, User, Profile  # 실제 모델 경로에 따라 수정
+from config.utils import grammar_correction
+from config.serializers import GrammarCorrectionSerializer
 
 # SNS 회원가입 후 DB 연동
 @swagger_auto_schema(
@@ -166,7 +168,37 @@ def get_answer_stats(request, user_id):
         "correct_rate": correct_rate
     })
 
+@swagger_auto_schema(
+    method="POST",
+    operation_description="Correct grammar in text",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "text": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Text to correct grammar",
+            ),
+        },
+    ),
+    responses={200: "Successful response description here"},
+)
+@csrf_exempt
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def grammar_correction_veiw(request):
+    serializer = GrammarCorrectionSerializer(data=request.data)
 
+    if serializer.is_valid():
+        text_to_correct = serializer.validated_data.get('text', '')
+
+        if not text_to_correct:
+            return Response({'error': 'Text to correct is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        corrected_text = grammar_correction(text_to_correct)
+        return Response({'corrected_text': corrected_text}, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 ITEM_COUNT_PER_PAGE = 30
 SCHEMA_FILED_EXCEPT = [
     "page",

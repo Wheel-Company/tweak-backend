@@ -50,12 +50,6 @@ from api.models import *
 from config.utils import CustomSchema
 import coreapi
 from django.contrib.auth.hashers import check_password
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from .utils import grammar_correction
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from .serializers import GrammarCorrectionSerializer
 
 
 @api_view(["GET"])
@@ -69,22 +63,3 @@ def health_check(request):
     Endpoint for health check.
     """
     return HttpResponse("OK")
-
-
-@permission_classes((AllowAny,))
-class GrammarCorrectionView(APIView):
-    serializer_class = GrammarCorrectionSerializer  # 시리얼라이저 지정
-
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-
-        if serializer.is_valid():
-            text_to_correct = serializer.validated_data.get('text', '')
-
-            if not text_to_correct:
-                return Response({'error': 'Text to correct is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            corrected_text = grammar_correction(text_to_correct)
-            return Response({'corrected_text': corrected_text}, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

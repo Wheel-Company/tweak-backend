@@ -15,6 +15,7 @@ from django.urls import path, re_path, include
 
 # Application imports
 from api import views
+from config.serializers import GrammarCorrectionSerializer
 from config.views import *
 from config.views import health_check
 from django.urls import path, re_path, include
@@ -68,7 +69,7 @@ urlpatterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('grammar-correction/', GrammarCorrectionView.as_view(), name='grammar-correction'),
+    path('grammar-correction/', views.grammar_correction_veiw, name='grammar-correction'),
     path('myNote/', views.my_note, name='my_note'),
     path('last_sub_category/<int:user_id>/', views.get_last_sub_category, name='get_last_sub_category'),
     path('get_answer_stats/<int:user_id>/', views.get_answer_stats, name='get_answer_stats'),
