@@ -36,7 +36,7 @@ from config.serializers import GrammarCorrectionSerializer
         openapi.Parameter(
             name="user_id",
             in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,  # Use TYPE_INTEGER for user_id
+            type=openapi.TYPE_INTEGER,
             description="User ID to retrieve notes",
         ),
     ],
@@ -46,22 +46,11 @@ from config.serializers import GrammarCorrectionSerializer
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def get_note_list(request, user_id):
-    # Use try-except to handle errors gracefully
-    try:
-        # Modify this queryset to filter notes for the given user_id
+    # try:
         queryset = Note.objects.filter(user_id=user_id).order_by("-id")
-        
-        # Use the NoteSerializer you defined earlier
         serializer = NoteSerializer(queryset, many=True)
-        
-        # Serialize the data
         serialized_data = serializer.data
-        
-        # Return the serialized data as an HTTP response
-        return JsonResponse({"data": serialized_data}, status=status.HTTP_200_OK)  # Return data within a JSON object
-    except Exception as e:
-        # Handle exceptions, you can customize this error response
-        return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(serializer.data)
     
 # SNS 회원가입 후 DB 연동
 @swagger_auto_schema(
