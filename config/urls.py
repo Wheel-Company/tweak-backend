@@ -56,7 +56,15 @@ class ObtainAuthTokenWithLogin(BaseJSONWebTokenAPIView):
                 refresh_token = User.objects.make_random_password(length=20)
                 result.data["refresh_token"] = refresh_token
         return result
+    
+# class CustomRouter(routers.DefaultRouter):
+#     def get_default_basename(self, viewset):
+#         if viewset == WritingContentViewSet:
+#             return None
+#         return super().get_default_basename(viewset)
 
+# router = CustomRouter()
+# router.register(r'writing-content', WritingContentViewSet, basename='writingcontent')
 router = routers.DefaultRouter()
 # router.register(r"api-user", UserViewSet)
 
@@ -69,12 +77,14 @@ urlpatterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('grammar-correction/', views.grammar_correction_veiw, name='grammar-correction'),
+    path('grammar-correction/', views.grammar_correction_view, name='grammar-correction'),
     path('myNote/', views.my_note, name='my_note'),
     path('last_sub_category/<int:user_id>/', views.get_last_sub_category, name='get_last_sub_category'),
     path('get_answer_stats/<int:user_id>/', views.get_answer_stats, name='get_answer_stats'),
     path('get_sns_user/<str:sns_id>/', views.get_sns_user, name='get_sns_user'),
     path('create_sns_user/', views.create_sns_user, name='get_sns_user'),
+    # path('api-writing/content/', views.api_writing_content, name='api-writing-content'),
+    path('api-user-note/<int:user_id>/', views.get_note_list, name='get_note_list'),
 ]
 
 urlpatterns += router.urls

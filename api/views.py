@@ -14,6 +14,8 @@ from rest_framework.authentication import SessionAuthentication
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ObjectDoesNotExist
+# Import your serializer for the Note model here
+from config.serializers import NoteSerializer
 
 # Django imports
 from django.shortcuts import render
@@ -23,10 +25,44 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count, F
 
 # Local imports
-from api.models import Answer, WritingContent, Category, User, Profile  # 실제 모델 경로에 따라 수정
+from api.models import Answer, WritingContent, Category, User, Profile, Note  # 실제 모델 경로에 따라 수정
 from config.utils import grammar_correction
 from config.serializers import GrammarCorrectionSerializer
 
+@swagger_auto_schema(
+    method="GET",
+    operation_description="Get my note list",
+    manual_parameters=[
+        openapi.Parameter(
+            name="user_id",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_INTEGER,  # Use TYPE_INTEGER for user_id
+            description="User ID to retrieve notes",
+        ),
+    ],
+    responses={200: "Successful response description here"},
+)
+@csrf_exempt
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_note_list(request, user_id):
+    # Use try-except to handle errors gracefully
+    try:
+        # Modify this queryset to filter notes for the given user_id
+        queryset = Note.objects.filter(user_id=user_id).order_by("-id")
+        
+        # Use the NoteSerializer you defined earlier
+        serializer = NoteSerializer(queryset, many=True)
+        
+        # Serialize the data
+        serialized_data = serializer.data
+        
+        # Return the serialized data as an HTTP response
+        return JsonResponse({"data": serialized_data}, status=status.HTTP_200_OK)  # Return data within a JSON object
+    except Exception as e:
+        # Handle exceptions, you can customize this error response
+        return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 # SNS 회원가입 후 DB 연동
 @swagger_auto_schema(
     method="POST",
@@ -185,19 +221,14 @@ def get_answer_stats(request, user_id):
 @csrf_exempt
 @api_view(["POST"])
 @permission_classes([AllowAny])
-def grammar_correction_veiw(request):
-    serializer = GrammarCorrectionSerializer(data=request.data)
+def grammar_correction_view(request):
+    text_to_correct = request.data.get('text', '')
 
-    if serializer.is_valid():
-        text_to_correct = serializer.validated_data.get('text', '')
+    if not text_to_correct:
+        return Response({'error': 'Text to correct is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not text_to_correct:
-            return Response({'error': 'Text to correct is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        corrected_text = grammar_correction(text_to_correct)
-        return Response({'corrected_text': corrected_text}, status=status.HTTP_200_OK)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    corrected_text = grammar_correction(text_to_correct)
+    return Response({'corrected_text': corrected_text}, status=status.HTTP_200_OK)
     
 ITEM_COUNT_PER_PAGE = 30
 SCHEMA_FILED_EXCEPT = [
