@@ -99,7 +99,7 @@ openai.organization = "org-6fqXgACDDoBpHMfmZjuFrJcG"
 def grammar_correction(text):
     response = openai.Completion.create(
         model="gpt-3.5-turbo-instruct",
-        prompt=f"Please correct the following text: '{text}'\n\nCorrected text:",
+        prompt=f"Please correct the following text: '{text}'\n\nCorrected text. don't change the meaning.",
         max_tokens=50  # 적절한 길이로 조절
     )
     
