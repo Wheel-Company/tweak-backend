@@ -20,6 +20,7 @@ class Category(models.Model):
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     level = models.IntegerField(choices=LEVEL_CHOICES, default=1)
     code = models.CharField(max_length=6, unique=True, null=True, blank=True)
+    max_difficulty = models.IntegerField(null=True, blank=True)
 
 class Difficulty(models.Model):
     name = models.CharField(max_length=100, default='Beginner')
