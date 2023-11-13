@@ -479,8 +479,14 @@ def getViewSet(modelClass):
     )
     # @authentication_classes((JSONWebTokenAuthentication, SessionAuthentication))
     class ApiViewSet(viewsets.ModelViewSet):
+        """
+        This class represents the API view set for handling API requests.
+        """
         queryset = modelClass.objects.all().order_by("-id")
         serializer_class = getSerializer(modelClass)
+        @swagger_auto_schema(
+            manual_parameters=generate_manual_parameters(modelClass),
+        )
         def list(self, request):
             page = request.GET.get("page")
             depth = request.GET.get("depth")
