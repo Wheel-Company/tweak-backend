@@ -78,7 +78,6 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('grammar-correction/', views.grammar_correction_view, name='grammar-correction'),
-    path('myNote/', views.my_note, name='my_note'),
     path('last_sub_category/<int:user_id>/', views.get_last_sub_category, name='get_last_sub_category'),
     path('get_answer_stats/<int:user_id>/', views.get_answer_stats, name='get_answer_stats'),
     path('get_sns_user/<str:sns_id>/', views.get_sns_user, name='get_sns_user'),

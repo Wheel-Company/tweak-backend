@@ -9,6 +9,8 @@ class Profile(models.Model):
     sns_id = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)  # 마지막 로그인 시간
+    # Define a manager (objects) for the model
+    objects = models.Manager()
 
 LEVEL_CHOICES = [
     (1, '대분류'),
@@ -21,9 +23,12 @@ class Category(models.Model):
     level = models.IntegerField(choices=LEVEL_CHOICES, default=1)
     code = models.CharField(max_length=6, unique=True, null=True, blank=True)
     max_difficulty = models.IntegerField(null=True, blank=True)
+    # Define a manager (objects) for the model
+    objects = models.Manager()
 
 class Difficulty(models.Model):
     name = models.CharField(max_length=100, default='Beginner')
+    objects = models.Manager()
 
 class WritingContent(models.Model):
     content_code = models.CharField(max_length=20, unique=True, null=True, blank=True)
@@ -33,6 +38,9 @@ class WritingContent(models.Model):
     sequence = models.IntegerField(default=1)  # 문제 순서
     content_text_en = models.TextField(blank=True)
     content_text = models.JSONField(null=True)
+    
+    # Define a manager (objects) for the model
+    objects = models.Manager()
 
     class Meta:
         db_table = 'api_writing_content'
@@ -43,6 +51,8 @@ class Answer(models.Model):
     user_answer_text = models.TextField()
     is_correct = models.BooleanField(default=False)
     answered_at = models.DateTimeField(auto_now_add=True)
+    # Define a manager (objects) for the model
+    objects = models.Manager()
 
 
 class Coupon(models.Model):
@@ -55,6 +65,8 @@ class Note(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    # Define a manager (objects) for the model
+    objects = models.Manager()
 
 class Banner(models.Model):
     image_url = models.URLField()
@@ -103,4 +115,10 @@ class ContentData(models.Model):
     version = models.CharField(max_length=20)
 
     def __str__(self):
+        """
+        Returns a string representation of the object.
+
+        :return: The file name of the object.
+        :rtype: str
+        """
         return self.file_name

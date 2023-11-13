@@ -1,33 +1,30 @@
 # Standard Library Imports
+import json
 from datetime import timedelta
 from functools import reduce
-import json
 
-# Third-party imports
-from rest_framework import viewsets, status, serializers
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Q
+from django.http import HttpResponseBadRequest, JsonResponse
+# Django imports
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
-from rest_framework.authentication import SessionAuthentication
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from django.core.exceptions import ObjectDoesNotExist
-# Import your serializer for the Note model here
-from config.serializers import NoteSerializer
-
-# Django imports
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.utils import timezone
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q, Count, F
+# Third-party imports
+from rest_framework import serializers, status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
 # Local imports
-from api.models import Answer, WritingContent, Category, User, Profile, Note  # 실제 모델 경로에 따라 수정
-from config.utils import grammar_correction
-from config.serializers import GrammarCorrectionSerializer
+from api.models import (Answer, Category, Note, Profile,  # 실제 모델 경로에 따라 수정
+                        User, WritingContent)
+# Import your serializer for the Note model here
+from config.serializers import NoteSerializer
+from config.utils import CustomSchema, grammar_correction
+
 
 @swagger_auto_schema(
     method="GET",
@@ -45,12 +42,21 @@ from config.serializers import GrammarCorrectionSerializer
 @csrf_exempt
 @api_view(["GET"])
 @permission_classes([AllowAny])
-def get_note_list(request, user_id):
-    # try:
-        queryset = Note.objects.filter(user_id=user_id).order_by("-id")
-        serializer = NoteSerializer(queryset, many=True)
-        serialized_data = serializer.data
-        return Response(serializer.data)
+def get_note_list(user_id):
+    """
+    Retrieve a list of notes for a specific user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        user_id (int): The ID of the user to retrieve notes for.
+
+    Returns:
+        Response: The HTTP response containing the serialized note data.
+    """
+    # Rest of the function code...
+    queryset = Note.objects.filter(user_id=user_id).order_by("-id")
+    serializer = NoteSerializer(queryset, many=True)
+    return Response(serializer.data)
     
 # SNS 회원가입 후 DB 연동
 @swagger_auto_schema(
@@ -78,8 +84,8 @@ def create_sns_user(request):
         sns_type = request.data.get("sns_type")
         email = request.data.get("email")  # 추가된 email 정보를 받음
         # 기존 User 모델의 email 필드에 이메일 저장
-        user, created = User.objects.get_or_create(username=sns_id, defaults={"email": email})
-        profile, profile_created = Profile.objects.get_or_create(user=user, sns_id=sns_id,sns_type=sns_type)
+        user = User.objects.get_or_create(username=sns_id, defaults={"email": email})
+        Profile.objects.get_or_create(user=user, sns_id=sns_id,sns_type=sns_type)
         
         return JsonResponse(status=status.HTTP_201_CREATED, data={"user_id": user.id})
     except Exception as e:
@@ -103,7 +109,7 @@ def create_sns_user(request):
 @csrf_exempt
 @api_view(["GET"])
 @permission_classes((AllowAny,))
-def get_sns_user(request, sns_id):
+def get_sns_user(sns_id):
     """Retrieve an SNS user's profile from the database."""
     try:
         user = User.objects.get(username=sns_id)
@@ -128,7 +134,23 @@ def get_sns_user(request, sns_id):
 @csrf_exempt
 @api_view(["GET"])
 @permission_classes((AllowAny,))
+@csrf_exempt
+@api_view(["GET"])
+@permission_classes((AllowAny,))
 def get_last_sub_category(request, user_id):
+    """
+    Retrieve the last sub-category for a given user ID.
+
+    Parameters:
+        request (HttpRequest): The HTTP request object.
+        user_id (int): The ID of the user.
+
+    Returns:
+        JsonResponse: A JSON response containing the redirect URL.
+
+    Raises:
+        N/A
+    """
     try:
         last_answer = Answer.objects.filter(user_id=user_id).latest('answered_at')
         last_writing_content = WritingContent.objects.get(id=last_answer.writing_content_id)
@@ -139,7 +161,7 @@ def get_last_sub_category(request, user_id):
             return JsonResponse({"redirect_to": redirect_url})
         
         return JsonResponse({"redirect_to": "/main_category/"})
-        
+
     except Answer.DoesNotExist:
         return JsonResponse({"redirect_to": "/main_category/"})
         
@@ -152,7 +174,20 @@ def get_last_sub_category(request, user_id):
 @csrf_exempt
 @api_view(["GET"])
 @permission_classes((AllowAny,))
-def get_answer_stats(request, user_id):
+def get_answer_stats(user_id):
+    """
+    Get answer statistics for the last 7 days.
+
+    Parameters:
+    - request: The request object.
+    - user_id: The ID of the user.
+
+    Returns:
+    - A successful response with the answer statistics for the last 7 days.
+
+    Raises:
+    - Http404: If the user does not exist.
+    """
     try:
         # Try to get the user object
         user = User.objects.get(id=user_id)
@@ -211,6 +246,19 @@ def get_answer_stats(request, user_id):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def grammar_correction_view(request):
+    """
+    Corrects the grammar of the given text.
+
+    Parameters:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        Response: The HTTP response object containing the corrected text.
+
+    Raises:
+        ValueError: If the 'text' parameter is missing in the request data.
+
+    """
     text_to_correct = request.data.get('text', '')
 
     if not text_to_correct:
@@ -222,7 +270,7 @@ def grammar_correction_view(request):
 ITEM_COUNT_PER_PAGE = 30
 SCHEMA_FILED_EXCEPT = [
     "page",
-    # "filter",
+    "filter",
     "id",
     "count_per_page",
     "depth",
@@ -244,12 +292,49 @@ CHAIN_FILTER = [
     "exact",
     "iexact",
 ]
+def addAllFieldToSchema(model, schema):
+    """
+    Add all fields from the model to the schema.
 
-def getSerializer(modelClass):
-    class_name = modelClass.__name__
+    Args:
+        model: The model to extract fields from.
+        schema: The schema to add the fields to.
+
+    Returns:
+        The modified schema.
+    """
+    # Rest of the function code...
+    for field in model._meta.fields:
+        name = field.__str__().split('.')[-1]
+        # if name in SCHEMA_FILED_EXCEPT:
+        #   continue
+        schema.append(openapi.Parameter(name, openapi.IN_QUERY, description="", type=openapi.TYPE_INTEGER, required=False))
+    return schema
+
+def getSerializer(model_class):
+    """
+    Generate a serializer class for the given model class.
+
+    Parameters:
+        model_class (class): The model class to create the serializer for.
+
+    Returns:
+        class: The generated serializer class.
+
+    Note:
+        - The generated serializer class is a subclass of `serializers.ModelSerializer`.
+        - The generated serializer class has a `Meta` inner class that specifies the model, fields, and ref_name.
+
+    Example:
+        >>> serializer = getSerializer(MyModel)
+        >>> serialized_data = serializer(data=my_data)
+        >>> serialized_data.is_valid()
+        True
+    """
+    class_name = model_class.__name__
     class ApiSerializer(serializers.ModelSerializer):
         class Meta:
-            model = modelClass
+            model = model_class
             fields = "__all__"
             ref_name = f"{class_name}API"  # 고유한 ref_name 설정
 
@@ -258,6 +343,19 @@ def getSerializer(modelClass):
 
 
 def readQuery(request, key):
+    """
+    Reads a query parameter from the given HTTP request and returns a Django Q object.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        key (str): The name of the query parameter to read.
+
+    Returns:
+        Q: A Django Q object representing the query.
+
+    Raises:
+        None.
+    """
     if "[]" in key:
         value = request.GET.get(key, "[]")
         if value == "[]":
@@ -281,6 +379,19 @@ def readQuery(request, key):
 
 
 def applyOption(request, queryset):
+    """
+    Apply option to the given queryset based on the request parameters.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        queryset (QuerySet): The queryset to apply options to.
+
+    Returns:
+        QuerySet: The modified queryset.
+
+    Raises:
+        None
+    """
     op = request.GET.get("filter")
     logic = request.GET.get("logic")
     where = [Q()]
@@ -299,7 +410,7 @@ def applyOption(request, queryset):
             params = json.loads(op)
         else:
             where__and.append(readQuery(request, key))
-
+            
     queryset = queryset.filter(
         reduce(lambda x, y: x | y, where),
         reduce(lambda x, y: x & y, where__and),
@@ -310,10 +421,55 @@ def applyOption(request, queryset):
 
     return queryset
 
-def my_note(request):
-            return render(request, 'my_note.html')
+def generate_manual_parameters(modelClass):
+    """
+    Generate manual parameters for filtering based on the model fields.
+
+    Args:
+        modelClass (class): The model class for which parameters are generated.
+
+    Returns:
+        list: A list of manual parameters for filtering based on model fields.
+    """
+    manual_parameters = []
+
+    for field in modelClass._meta.fields:
+        field_name = field.name
+        field_type = openapi.TYPE_STRING  # You can set appropriate types based on your field types
+
+        parameter = openapi.Parameter(
+            field_name,
+            openapi.IN_QUERY,
+            description=f"{field_name} filter",
+            type=field_type,
+            required=False,
+        )
+        manual_parameters.append(parameter)
+    # Additional parameters
+    manual_parameters.append(openapi.Parameter('page', openapi.IN_QUERY, description="page", type=openapi.TYPE_INTEGER, required=True))
+    manual_parameters.append(openapi.Parameter('count_per_page', openapi.IN_QUERY, description="count_per_page", type=openapi.TYPE_INTEGER, required=True))
+    manual_parameters.append(openapi.Parameter('filter', openapi.IN_QUERY, description="filter", type=openapi.TYPE_STRING, required=False))
+    manual_parameters.append(openapi.Parameter('order_by', openapi.IN_QUERY, description="order_by", type=openapi.TYPE_STRING, required=False))
+    manual_parameters.append(openapi.Parameter('ignore[]', openapi.IN_QUERY, description="ignore[]", type=openapi.TYPE_STRING, required=False))
+    manual_parameters.append(openapi.Parameter('depth', openapi.IN_QUERY, description="depth", type=openapi.TYPE_INTEGER, required=False))
+
+    return manual_parameters
         
 def getViewSet(modelClass):
+    """
+    Returns a viewset class for the given `modelClass`.
+
+    Parameters:
+        - `modelClass`: The model class to create a viewset for.
+
+    Returns:
+        - `ApiViewSet`: A viewset class that provides CRUD operations for the `modelClass` model.
+
+    Example Usage:
+        ```
+        viewset = getViewSet(MyModel)
+        ```
+    """
     # @permission_classes((IsAuthenticatedOrReadOnly,))
     # @authentication_classes((JSONWebTokenAuthentication, SessionAuthentication))
     @permission_classes(
@@ -366,6 +522,25 @@ def getViewSet(modelClass):
                 instance._prefetched_objects_cache = {}
 
             return Response(serializer.data)
+    
+        # Add a custom method for filtering answers by day and difficulty
+        if modelClass.__name__ == "Answer":
+            @action(detail=False, methods=['GET'])
+            def filter_by_day_and_difficulty(self, request):
+                # Get the parameters from the request
+                day = request.GET.get("day")
+                difficulty = request.GET.get("difficulty")
+
+                # Filter the answers based on day and difficulty
+                filtered_answers = Answer.objects.filter(
+                    writing_content__day=day,
+                    writing_content__difficulty__name=difficulty,
+                )
+
+                # Serialize the filtered answers and return as JSON response
+                serializer = getSerializer(Answer)
+                serialized_data = serializer(filtered_answers, many=True).data
+                return Response(serialized_data, status=status.HTTP_200_OK)
 
     return ApiViewSet
 
