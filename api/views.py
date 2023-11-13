@@ -42,7 +42,7 @@ from config.utils import CustomSchema, grammar_correction
 @csrf_exempt
 @api_view(["GET"])
 @permission_classes([AllowAny])
-def get_note_list(user_id):
+def get_note_list(request, user_id):
     """
     Retrieve a list of notes for a specific user.
 
@@ -84,8 +84,8 @@ def create_sns_user(request):
         sns_type = request.data.get("sns_type")
         email = request.data.get("email")  # 추가된 email 정보를 받음
         # 기존 User 모델의 email 필드에 이메일 저장
-        user = User.objects.get_or_create(username=sns_id, defaults={"email": email})
-        Profile.objects.get_or_create(user=user, sns_id=sns_id,sns_type=sns_type)
+        user, created = User.objects.get_or_create(username=sns_id, defaults={"email": email})
+        profile, profile_created = Profile.objects.get_or_create(user=user, sns_id=sns_id,sns_type=sns_type)
         
         return JsonResponse(status=status.HTTP_201_CREATED, data={"user_id": user.id})
     except Exception as e:
@@ -109,7 +109,7 @@ def create_sns_user(request):
 @csrf_exempt
 @api_view(["GET"])
 @permission_classes((AllowAny,))
-def get_sns_user(sns_id):
+def get_sns_user(request, sns_id):
     """Retrieve an SNS user's profile from the database."""
     try:
         user = User.objects.get(username=sns_id)
@@ -174,7 +174,7 @@ def get_last_sub_category(request, user_id):
 @csrf_exempt
 @api_view(["GET"])
 @permission_classes((AllowAny,))
-def get_answer_stats(user_id):
+def get_answer_stats(request, user_id):
     """
     Get answer statistics for the last 7 days.
 

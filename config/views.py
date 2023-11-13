@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 # Define the health_check endpoint
 @api_view(["GET"])
 @permission_classes([AllowAny])
-def health_check():
+def health_check(request):
     """
     Endpoint for health check.
     """
