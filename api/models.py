@@ -64,6 +64,7 @@ class Coupon(models.Model):
 class Note(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
+    corrected_content = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     # Define a manager (objects) for the model
     objects = models.Manager()

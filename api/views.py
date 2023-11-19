@@ -265,7 +265,7 @@ def grammar_correction_view(request):
         return Response({'error': 'Text to correct is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
     corrected_text = grammar_correction(text_to_correct)
-    return Response({'corrected_text': corrected_text}, status=status.HTTP_200_OK)
+    return Response({'corrected_text': corrected_text.replace('"', ' ')}, status=status.HTTP_200_OK)
     
 ITEM_COUNT_PER_PAGE = 30
 SCHEMA_FILED_EXCEPT = [
