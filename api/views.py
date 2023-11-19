@@ -131,22 +131,18 @@ def get_sns_user(request, sns_id):
     ],
     responses={200: "Successful response description here"},
 )
-@csrf_exempt
 @api_view(["GET"])
 @permission_classes((AllowAny,))
-@csrf_exempt
-@api_view(["GET"])
-@permission_classes((AllowAny,))
-def get_last_sub_category(request, user_id):
+def get_recent_learning(request, user_id):
     """
-    Retrieve the last sub-category for a given user ID.
+    Retrieve recently learned sub-category and writing content for a given user ID.
 
     Parameters:
         request (HttpRequest): The HTTP request object.
         user_id (int): The ID of the user.
 
     Returns:
-        JsonResponse: A JSON response containing the redirect URL.
+        Response: A JSON response containing the last sub-category and writing content.
 
     Raises:
         N/A
@@ -156,14 +152,41 @@ def get_last_sub_category(request, user_id):
         last_writing_content = WritingContent.objects.get(id=last_answer.writing_content_id)
         last_category = Category.objects.get(id=last_writing_content.category_id)
         
-        if last_category.level == 3:
-            redirect_url = f"/sub_category/{last_category.id}/"
-            return JsonResponse({"redirect_to": redirect_url})
+        # Collect category hierarchy starting from the last category
+        category_hierarchy = []
+        current_category = last_category
+        while current_category is not None:
+            category_hierarchy.insert(0, {
+                "id": current_category.id,
+                "name": current_category.name,
+                "level": current_category.level,
+            })
+            current_category = current_category.parent
         
-        return JsonResponse({"redirect_to": "/main_category/"})
+        # Return the last sub-category and writing content details
+        response_data = {
+            "last_sub_category": {
+                "id": last_category.id,
+                "name": last_category.name,
+                "level": last_category.level,
+            },
+            "category_hierarchy": category_hierarchy,
+            "last_writing_content": {
+                "id": last_writing_content.id,
+                "content_code": last_writing_content.content_code,
+                "category_id": last_writing_content.category_id,
+                "difficulty_id": last_writing_content.difficulty_id,
+                "day": last_writing_content.day,
+                "sequence": last_writing_content.sequence,
+                "content_text_en": last_writing_content.content_text_en,
+                # Add other fields as needed
+            },
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
     except Answer.DoesNotExist:
-        return JsonResponse({"redirect_to": "/main_category/"})
+        # If there are no answers, return an empty response
+        return Response({}, status=status.HTTP_200_OK)
         
 
 @swagger_auto_schema(

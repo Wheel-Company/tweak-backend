@@ -78,12 +78,12 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('grammar-correction/', views.grammar_correction_view, name='grammar-correction'),
-    path('last_sub_category/<int:user_id>/', views.get_last_sub_category, name='get_last_sub_category'),
-    path('get_answer_stats/<int:user_id>/', views.get_answer_stats, name='get_answer_stats'),
-    path('get_sns_user/<str:sns_id>/', views.get_sns_user, name='get_sns_user'),
-    path('create_sns_user/', views.create_sns_user, name='get_sns_user'),
+    path('recent_learning/<int:user_id>/', views.get_recent_learning, name='recent_learning'),
+    path('answer_stats/<int:user_id>/', views.get_answer_stats, name='answer_stats'),
+    path('sns_user/<str:sns_id>/', views.get_sns_user, name='sns_user'),
+    path('sns_user/', views.create_sns_user, name='sns_user'),
     # path('api-writing/content/', views.api_writing_content, name='api-writing-content'),
-    path('api-user-note/<int:user_id>/', views.get_note_list, name='get_note_list'),
+    path('api-user-note/<int:user_id>/', views.get_note_list, name='api-user-note'),
 ]
 
 urlpatterns += router.urls
