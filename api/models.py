@@ -99,6 +99,7 @@ class SavedQuestion(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content_text = models.ForeignKey(WritingContent, on_delete=models.CASCADE)
     saved_at = models.DateTimeField(auto_now_add=True)  # 저장 시간
+    use_yn = models.BooleanField(default=True)
 
 class Subscription(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
