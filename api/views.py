@@ -2,6 +2,9 @@
 import json
 from datetime import timedelta
 from functools import reduce
+from django.db import models,transaction
+from django.db.models import Count,Sum,Max,Case,When,IntegerField
+
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -20,44 +23,95 @@ from rest_framework.response import Response
 
 # Local imports
 from api.models import (Answer, Category, Note, Profile,  # 실제 모델 경로에 따라 수정
-                        User, WritingContent)
+                        User, WritingContent,SavedQuestion)
 # Import your serializer for the Note model here
 from config.serializers import NoteSerializer
 from config.utils import CustomSchema, grammar_correction
 
-
 @swagger_auto_schema(
     method="GET",
-    operation_description="Get my note list",
+    operation_description="Get user completion status for questions",
     manual_parameters=[
-        openapi.Parameter(
-            name="user_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description="User ID to retrieve notes",
-        ),
+        openapi.Parameter('user_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+        openapi.Parameter('category', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+        openapi.Parameter('difficulty', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+        openapi.Parameter('day', openapi.IN_QUERY, type=openapi.TYPE_INTEGER, required=False),
     ],
-    responses={200: "Successful response description here"},
 )
 @csrf_exempt
-@api_view(["GET"])
+@api_view(['GET'])
 @permission_classes([AllowAny])
-def get_note_list(request, user_id):
-    """
-    Retrieve a list of notes for a specific user.
+def user_completion_status(request):
+    user_id = request.GET.get('user_id')
+    category = request.GET.get('category')
+    difficulty = request.GET.get('difficulty')
+    day = request.GET.get('day', None)  # Optional parameter
 
-    Args:
-        request (HttpRequest): The HTTP request object.
-        user_id (int): The ID of the user to retrieve notes for.
+    # Filter WritingContent based on criteria
+    queryset = WritingContent.objects.filter(category__id=category, difficulty__id=difficulty)
 
-    Returns:
-        Response: The HTTP response containing the serialized note data.
-    """
-    # Rest of the function code...
-    queryset = Note.objects.filter(user_id=user_id).order_by("-id")
-    serializer = NoteSerializer(queryset, many=True)
-    return Response(serializer.data)
-    
+    if day is not None:
+        queryset = queryset.filter(day=day)
+
+    # Get all days for the specified category and difficulty
+    all_days = WritingContent.objects.filter(category__id=category, difficulty__id=difficulty).values_list('day', flat=True).distinct()
+
+    # Count the number of rows in the Answer table that match the criteria
+    completion_status = Answer.objects.filter(
+        user_id=user_id,
+        writing_content__in=queryset
+    ).values('writing_content__day').annotate(
+        total_count=Count('id')
+    )
+
+    # Convert the result into a dictionary with all days included
+    completion_status_dict = {day: 0 for day in all_days}
+    completion_status_dict.update({item['writing_content__day']: item['total_count'] for item in completion_status})
+
+    return JsonResponse(completion_status_dict)
+
+
+
+
+
+@swagger_auto_schema(
+    method="POST",
+    operation_description="Cancel saved questions for a user",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'user': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'content_ids': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(type=openapi.TYPE_INTEGER),
+            ),
+        },
+    ),
+    responses={200: 'Saved questions canceled successfully'},
+)
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def cancel_saved_questions(request):
+    try:
+        user = request.data.get('user')
+        content_ids = request.data.get('content_ids', [])
+
+        # Ensure user and content_ids are valid
+        if user is not None and content_ids:
+            # Use a transaction to ensure atomicity of the update operation
+            with transaction.atomic():
+                # Update the use_yn field to 0 for SavedQuestion records
+                # Filter by user and content_ids
+                SavedQuestion.objects.filter(user=user, id__in=content_ids).update(use_yn=0)
+
+        return JsonResponse({'message': 'Saved questions canceled successfully'})
+
+    except Exception as e:
+        # Log the exception for debugging purposes
+        print(f"Error: {e}")
+        return JsonResponse({'error': 'An error occurred while canceling saved questions.'}, status=500)
+
 # SNS 회원가입 후 DB 연동
 @swagger_auto_schema(
     method="POST",
@@ -554,7 +608,38 @@ def getViewSet(modelClass):
     
         # Add a custom method for filtering answers by day and difficulty
         if modelClass.__name__ == "Answer":
+            @action(detail=False, methods=['POST'])
+            def create_or_update_answer(self, request):
+                # Get the parameters from the request
+                user_id = request.data.get('user')
+                writing_content_id = request.data.get('writing_content')
+                user_answer_text = request.data.get('user_answer_text')
+                is_correct = request.data.get('is_correct', False)
+
+                # Check if an answer with the given user and writing_content already exists
+                existing_answer = Answer.objects.filter(
+                    user=user_id,
+                    writing_content=writing_content_id
+                ).first()
+
+                if existing_answer:
+                    # If the answer exists, update it
+                    existing_answer.user_answer_text = user_answer_text
+                    existing_answer.is_correct = is_correct
+                    existing_answer.save()
+                    serializer = self.get_serializer(existing_answer)
+                else:
+                    # If the answer doesn't exist, create a new one
+                    serializer = self.get_serializer(data=request.data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
             @action(detail=False, methods=['GET'])
+            @swagger_auto_schema(
+                manual_parameters=generate_manual_parameters(modelClass),
+            )
             def filter_by_day_and_difficulty(self, request):
                 # Get the parameters from the request
                 day = request.GET.get("day")
@@ -570,6 +655,95 @@ def getViewSet(modelClass):
                 serializer = getSerializer(Answer)
                 serialized_data = serializer(filtered_answers, many=True).data
                 return Response(serialized_data, status=status.HTTP_200_OK)
+            
+        elif modelClass.__name__ == "SavedQuestion":
+            @action(detail=False, methods=['PUT'])
+            def toggle_saved_status(self, request):
+                # Get the content_text from the request data
+                content_text = request.data.get('content_text')
+                
+                # Check if the content is already saved by the user
+                saved_question = SavedQuestion.objects.filter(
+                    user=request.user,
+                    content_text=content_text
+                ).first()
+
+                if saved_question:
+                    # If the content is already saved, update use_yn to True
+                    saved_question.use_yn = True
+                    saved_question.save()
+                else:
+                    # If the content is not saved, create a new entry
+                    SavedQuestion.objects.create(user=request.user, content_text=content_text, use_yn=True)
+
+                serializer = self.get_serializer(saved_question)
+                return Response(serializer.data)
+
+            @action(detail=False, methods=['PUT'])
+            def remove_from_saved(self, request):
+                # Get the content_id from the request data
+                content_text = request.data.get('content_text')
+                
+                # Check if the content is saved by the user
+                saved_question = SavedQuestion.objects.filter(
+                    user=request.user,
+                    content_text=content_text
+                ).first()
+
+                if saved_question:
+                    # If the content is saved, update use_yn to False
+                    saved_question.use_yn = False
+                    saved_question.save()
+                    serializer = self.get_serializer(saved_question)
+                    return Response(serializer.data)
+                else:
+                    # If the content is not saved, return an appropriate response
+                    return Response({'detail': 'Content not found in saved questions.'}, status=status.HTTP_404_NOT_FOUND)
+                
+            @action(detail=False, methods=['GET'])
+            @swagger_auto_schema(
+                manual_parameters=generate_manual_parameters(modelClass),
+            )
+            def filter_by_content_code_prefix(self, request):
+                # Get the prefix from the request data
+                prefix = request.query_params.get('prefix', '')
+
+                # Filter WritingContent based on the content_code prefix
+                writing_content_ids = WritingContent.objects.filter(
+                    content_code__startswith='01'
+                ).values_list('id', flat=True)
+
+                # Filter SavedQuestion based on the filtered WritingContent
+                saved_questions = SavedQuestion.objects.filter(
+                    content_text_id__in=writing_content_ids,
+                    use_yn=True
+                )
+
+                serializer = self.get_serializer(saved_questions, many=True)
+                page = request.GET.get("page")
+                depth = request.GET.get("depth")
+                count = request.GET.get("count_per_page")
+                order = request.GET.get("order_by")
+                ignore = request.GET.get("ignore[]")
+                if ignore:
+                    ignore = request.GET.getlist("ignore[]")
+                else:
+                    ignore = []
+                queryset = applyOption(request, self.queryset)
+                if order:
+                    queryset = queryset.order_by(*order.split(","))
+                if page:
+                    res = applyPagination(
+                        queryset, self.serializer_class, page, count, depth, ignore
+                    )
+                else:
+                    res = []
+                    if depth:  # Deprecated
+                        for item in queryset.all():
+                            res.append(applyDepth(item, int(depth), ignore))
+                    else:
+                        res = self.serializer_class(queryset, many=True).data
+                return Response(serializer.data, status=status.HTTP_200_OK)
 
     return ApiViewSet
 

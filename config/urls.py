@@ -15,6 +15,7 @@ from django.urls import path, re_path, include
 
 # Application imports
 from api import views
+from api.views import cancel_saved_questions, user_completion_status
 from config.serializers import GrammarCorrectionSerializer
 from config.views import *
 from config.views import health_check
@@ -83,7 +84,11 @@ urlpatterns = [
     path('sns_user/<str:sns_id>/', views.get_sns_user, name='sns_user'),
     path('sns_user/', views.create_sns_user, name='sns_user'),
     # path('api-writing/content/', views.api_writing_content, name='api-writing-content'),
-    path('api-user-note/<int:user_id>/', views.get_note_list, name='api-user-note'),
+    # path('api-user-note/<int:user_id>/', views.get_note_list, name='api-user-note'),
+     # Include your new views
+    path('cancel_saved_questions/', cancel_saved_questions, name='cancel_saved_questions'),
+    path('user_completion_status/', user_completion_status, name='user_completion_status'),
+    
 ]
 
 urlpatterns += router.urls
