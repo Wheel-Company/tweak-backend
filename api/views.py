@@ -81,7 +81,7 @@ def user_completion_status(request):
         type=openapi.TYPE_OBJECT,
         properties={
             'user': openapi.Schema(type=openapi.TYPE_INTEGER),
-            'content_ids': openapi.Schema(
+            'saved_questions_ids': openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Schema(type=openapi.TYPE_INTEGER),
             ),
@@ -95,15 +95,15 @@ def user_completion_status(request):
 def cancel_saved_questions(request):
     try:
         user = request.data.get('user')
-        content_ids = request.data.get('content_ids', [])
+        saved_questions_ids = request.data.get('saved_questions_ids', [])
 
-        # Ensure user and content_ids are valid
-        if user is not None and content_ids:
+        # Ensure user and saved_questions_ids are valid
+        if user is not None and saved_questions_ids:
             # Use a transaction to ensure atomicity of the update operation
             with transaction.atomic():
                 # Update the use_yn field to 0 for SavedQuestion records
-                # Filter by user and content_ids
-                SavedQuestion.objects.filter(user=user, id__in=content_ids).update(use_yn=0)
+                # Filter by user and saved_questions_ids
+                SavedQuestion.objects.filter(user=user, id__in=saved_questions_ids).update(use_yn=0)
 
         return JsonResponse({'message': 'Saved questions canceled successfully'})
 
