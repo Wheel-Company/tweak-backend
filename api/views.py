@@ -69,14 +69,52 @@ def user_completion_status(request):
     completion_status_dict.update({item['writing_content__day']: item['total_count'] for item in completion_status})
 
     return JsonResponse(completion_status_dict)
+@swagger_auto_schema(
+    method="POST",
+    operation_description="Bookmark all specified questions for a user",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'user': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'content_text_ids': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(type=openapi.TYPE_INTEGER),
+            ),
+        },
+        required=['user', 'saved_questions_ids'],
+    ),
+    responses={200: "Successful response description here"},
+)
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def bookmark_all(request):
+    user = request.data.get('user')
+    saved_questions_ids = request.data.get('content_text_ids', [])
 
+    # Use a transaction to ensure atomicity of the update operation
+    with transaction.atomic():
+        # Create new SavedQuestion records for each content ID that doesn't exist
+        new_saved_questions = []
+        existing_saved_questions = SavedQuestion.objects.filter(user=user, content_text_id__in=saved_questions_ids)
+        existing_ids = set(q.content_text_id for q in existing_saved_questions)
+        
+        for content_id in saved_questions_ids:
+            if content_id not in existing_ids:
+                new_saved_questions.append(SavedQuestion(user_id=user, content_text_id=content_id))
 
+        # Bulk create new SavedQuestion records
+        SavedQuestion.objects.bulk_create(new_saved_questions)
 
+        # Update the use_yn field to True for existing SavedQuestion records
+        existing_saved_questions.update(use_yn=True)
 
+    response_data = {'message': 'All specified questions bookmarked successfully'}
+    return JsonResponse(response_data)
 
 @swagger_auto_schema(
     method="POST",
-    operation_description="Cancel saved questions for a user",
+    operation_description="Cancel Bookmark questions for a user",
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
@@ -86,6 +124,7 @@ def user_completion_status(request):
                 items=openapi.Schema(type=openapi.TYPE_INTEGER),
             ),
         },
+        required=['user', 'saved_questions_ids'],
     ),
     responses={200: 'Saved questions canceled successfully'},
 )
@@ -101,16 +140,18 @@ def cancel_saved_questions(request):
         if user is not None and saved_questions_ids:
             # Use a transaction to ensure atomicity of the update operation
             with transaction.atomic():
-                # Update the use_yn field to 0 for SavedQuestion records
+                # Update the use_yn field to False for SavedQuestion records
                 # Filter by user and saved_questions_ids
-                SavedQuestion.objects.filter(user=user, id__in=saved_questions_ids).update(use_yn=0)
+                SavedQuestion.objects.filter(user=user, id__in=saved_questions_ids).update(use_yn=False)
 
-        return JsonResponse({'message': 'Saved questions canceled successfully'})
+        return JsonResponse({'message': 'Bookmark questions canceled successfully'})
 
     except Exception as e:
         # Log the exception for debugging purposes
         print(f"Error: {e}")
         return JsonResponse({'error': 'An error occurred while canceling saved questions.'}, status=500)
+
+
 
 # SNS 회원가입 후 DB 연동
 @swagger_auto_schema(

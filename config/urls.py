@@ -15,7 +15,7 @@ from django.urls import path, re_path, include
 
 # Application imports
 from api import views
-from api.views import cancel_saved_questions, user_completion_status
+from api.views import cancel_saved_questions, user_completion_status,bookmark_all
 from config.serializers import GrammarCorrectionSerializer
 from config.views import *
 from config.views import health_check
@@ -88,6 +88,8 @@ urlpatterns = [
      # Include your new views
     path('cancel_saved_questions/', cancel_saved_questions, name='cancel_saved_questions'),
     path('user_completion_status/', user_completion_status, name='user_completion_status'),
+    path('bookmark_all/', bookmark_all, name='bookmark_all'),
+    
     
 ]
 
